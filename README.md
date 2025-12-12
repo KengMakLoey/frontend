@@ -1,2 +1,2 @@
 # frontend
-A repository for frontend development of Nakornping Q by KengMakLoey Team
+Frontend development of Nakornping Q project by KengMakLoey Team, a prototype queueing system for Nakornping Hospital.
