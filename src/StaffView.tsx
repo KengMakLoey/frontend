@@ -273,10 +273,17 @@ export default function StaffView({ onBack }: StaffViewProps) {
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100">
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-            <p className="text-gray-600">แผนก: {staffData?.departmentName || 'แผนก'}</p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+          <p className="text-gray-600">แผนก: {staffData?.departmentName || 'แผนก'}</p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowCreateQueue(!showCreateQueue)}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-semibold"
+          >
+            + สร้างคิวใหม่
+          </button>
           <button 
             onClick={() => {
               setIsStaffLoggedIn(false);
@@ -290,6 +297,51 @@ export default function StaffView({ onBack }: StaffViewProps) {
             ออกจากระบบ
           </button>
         </div>
+      </div>
+
+      {showCreateQueue && (
+        <div className="mb-6 p-6 bg-white rounded-2xl shadow-lg border-2 border-green-300">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-gray-800">สร้างคิวใหม่</h3>
+            <button
+              onClick={() => {
+                setShowCreateQueue(false);
+                setNewQueueVN('');
+              }}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+          <form onSubmit={handleCreateQueue} className="flex gap-3">
+            <input
+              type="text"
+              value={newQueueVN}
+              onChange={(e) => setNewQueueVN(e.target.value)}
+              placeholder="กรอกเลข VN (ตัวอย่าง: VN202601080001)"
+              className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
+              disabled={loading}
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 font-semibold"
+            >
+              {loading ? 'กำลังสร้าง...' : 'สร้างคิว'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowCreateQueue(false);
+                setNewQueueVN('');
+              }}
+              className="bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400"
+            >
+              ยกเลิก
+            </button>
+          </form>
+        </div>
+      )}
 
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
@@ -380,46 +432,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold text-gray-800">คิวที่รอ ({waitingQueues.length})</h2>
-                <button
-                  onClick={() => setShowCreateQueue(!showCreateQueue)}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm"
-                >
-                  + สร้างคิวใหม่
-                </button>
               </div>
-
-              {showCreateQueue && (
-                <div className="mb-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                  <h3 className="font-semibold mb-2">สร้างคิวใหม่</h3>
-                  <form onSubmit={handleCreateQueue} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newQueueVN}
-                      onChange={(e) => setNewQueueVN(e.target.value)}
-                      placeholder="กรอกเลข VN"
-                      className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-green-500"
-                      disabled={loading}
-                    />
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
-                    >
-                      {loading ? 'กำลังสร้าง...' : 'สร้าง'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowCreateQueue(false);
-                        setNewQueueVN('');
-                      }}
-                      className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400"
-                    >
-                      ยกเลิก
-                    </button>
-                  </form>
-                </div>
-              )}
 
               {waitingQueues.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">ไม่มีคิวที่รออยู่</div>
@@ -550,12 +563,6 @@ export default function StaffView({ onBack }: StaffViewProps) {
                   className="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
                 >
                   รีเฟรชคิว
-                </button>
-                <button
-                  onClick={() => setShowCreateQueue(true)}
-                  className="w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
-                >
-                  สร้างคิวใหม่
                 </button>
               </div>
             </div>
