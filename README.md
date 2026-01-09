@@ -4,3 +4,5 @@ Frontend development of Nakornping Q project by KengMakLoey Team, a prototype qu
 ## Setup
     1. pnpm install
     2. npm run dev
+
+#example
