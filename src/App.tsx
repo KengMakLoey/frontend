@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Users, UserCog, Hospital, QrCode, ArrowRight, CheckCircle, 
   Bell, Phone, SkipForward, CheckSquare, Clock, AlertCircle,
+  Volume2, VolumeX
 } from 'lucide-react';
 
 // ==================== TYPE DEFINITIONS ====================
@@ -11,7 +12,7 @@ interface QueueData {
   patientName: string;
   department: string;
   departmentLocation: string;
-  status: 'waiting' | 'called' | 'in_progress' | 'completed' | 'skipped'; // เพิ่ม 'in_progress'
+  status: 'waiting' | 'called' | 'in_progress' | 'completed' | 'skipped';
   currentQueue: string;
   yourPosition: number;
   estimatedTime: string;
@@ -34,11 +35,12 @@ interface StaffQueue {
   queueNumber: string;
   patientName: string;
   vn: string;
-  status: 'waiting' | 'called' | 'in_progress' | 'completed' | 'skipped'; // เพิ่ม 'in_progress'
+  status: 'waiting' | 'called' | 'in_progress' | 'completed' | 'skipped';
   issuedTime: string;
   isSkipped: boolean;
   priorityScore: number;
 }
+
 interface ApiResponse {
   success: boolean;
   message: string;
@@ -122,7 +124,7 @@ const API = {
     const response = await fetch(`${API_URL}/api/staff/queue/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vn, staffId }), // 👈 ส่งไปแค่ 2 ตัวนี้
+      body: JSON.stringify({ vn, staffId }),
     });
     if (!response.ok) {
       const error = await response.json();
@@ -214,24 +216,33 @@ function useQueueWebSocket(
   return { isConnected };
 }
 
-// ==================== LOADING SKELETON COMPONENT ====================
-const QueueSkeleton: React.FC = () => (
-  <div className="animate-pulse">
-    <div className="h-8 bg-gray-300 rounded w-1/2 mb-4 mx-auto"></div>
-    <div className="h-32 bg-gray-300 rounded mb-4"></div>
-    <div className="space-y-3">
-      <div className="h-4 bg-gray-300 rounded"></div>
-      <div className="h-4 bg-gray-300 rounded w-5/6"></div>
-      <div className="h-4 bg-gray-300 rounded w-4/6"></div>
-    </div>
-  </div>
-);
+// ==================== SOUND FUNCTION ====================
+const playBeepSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+  } catch (e) {
+    console.log('Audio play failed:', e);
+  }
+};
 
 // ==================== MAIN APP COMPONENT ====================
 type ViewType = 'landing' | 'patient' | 'staff';
 
 export default function App() {
-  // State management
   const [view, setView] = useState<ViewType>('landing');
   const [vn, setVn] = useState('');
   const [staffUsername, setStaffUsername] = useState('');
@@ -251,7 +262,6 @@ export default function App() {
   const hasPlayedSound = useRef(false);
   const notificationTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Memoized callback for WebSocket updates
   const handleQueueUpdate = useCallback((updatedData: QueueData) => {
     const oldStatus = queueData?.status;
     setQueueData(updatedData);
@@ -260,8 +270,7 @@ export default function App() {
       setNotification('🔔 ถึงคิวของคุณแล้ว! กรุณาเข้ารับบริการ');
       
       if (soundEnabled) {
-        const audio = new Audio('/notification.mp3');
-        audio.play().catch(e => console.log('Audio play failed:', e));
+        playBeepSound();
       }
       
       hasPlayedSound.current = true;
@@ -275,10 +284,8 @@ export default function App() {
     }
   }, [queueData?.status, soundEnabled]);
 
-  // WebSocket connection
   const { isConnected: wsConnected } = useQueueWebSocket(queueData?.vn, handleQueueUpdate);
 
-  // Fallback polling for patient
   useEffect(() => {
     let isMounted = true;
     let intervalId: NodeJS.Timeout | null = null;
@@ -293,8 +300,7 @@ export default function App() {
               setNotification('🔔 ถึงคิวของคุณแล้ว! กรุณาเข้ารับบริการ');
               
               if (soundEnabled) {
-                const audio = new Audio('/notification.mp3');
-                audio.play().catch(e => console.log('Audio play failed:', e));
+                playBeepSound();
               }
               
               hasPlayedSound.current = true;
@@ -323,7 +329,6 @@ export default function App() {
     };
   }, [queueData, view, wsConnected, soundEnabled]);
 
-  // Staff queue polling
   useEffect(() => {
     let isMounted = true;
     let intervalId: NodeJS.Timeout | null = null;
@@ -334,7 +339,7 @@ export default function App() {
         const queues = await API.getDepartmentQueues(staffData.departmentId);
         if (isMounted) {
           setStaffQueues(queues);
-          const called = queues.find(q => q.status === 'called' || q.status === 'in_progress'); // เพิ่ม in_progress
+          const called = queues.find(q => q.status === 'called' || q.status === 'in_progress');
           if (called) {
             setCurrentCalledQueue(called);
           } else if (currentCalledQueue && !queues.find(q => q.queueId === currentCalledQueue.queueId)) {
@@ -359,7 +364,6 @@ export default function App() {
     };
   }, [isStaffLoggedIn, view, staffData, currentCalledQueue]);
 
-  // Event handlers
   const handlePatientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!vn.trim()) {
@@ -458,7 +462,6 @@ export default function App() {
     try {
       await API.skipQueue(queueId, staffData?.staffName || 'staff');
       
-      // ถ้าคิวที่ข้ามคือคิวปัจจุบัน ให้ clear ทันที
       if (currentCalledQueue?.queueId === queueId) {
         setCurrentCalledQueue(null);
       }
@@ -518,7 +521,6 @@ export default function App() {
     }
   };
 
-  // ==================== RENDER: LANDING PAGE ====================
   if (view === 'landing') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
@@ -573,7 +575,6 @@ export default function App() {
     );
   }
 
-  // Patient View
   if (view === 'patient') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
@@ -590,6 +591,31 @@ export default function App() {
           >
             ← กลับหน้าหลัก
           </button>
+
+          {queueData && (
+            <div className="max-w-2xl mx-auto mb-4">
+              <button
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  soundEnabled 
+                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {soundEnabled ? (
+                  <>
+                    <Volume2 className="w-5 h-5" />
+                    <span>เสียงเปิดอยู่</span>
+                  </>
+                ) : (
+                  <>
+                    <VolumeX className="w-5 h-5" />
+                    <span>เสียงปิดอยู่</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
 
           {notification && (
             <div className="max-w-2xl mx-auto mb-6 bg-green-500 text-white p-4 rounded-lg flex items-center animate-pulse">
@@ -747,7 +773,6 @@ export default function App() {
     );
   }
 
-  // Staff View
   if (view === 'staff') {
     if (!isStaffLoggedIn) {
       return (
@@ -827,7 +852,6 @@ export default function App() {
       );
     }
 
-    // Staff Dashboard
     const waitingQueues = staffQueues.filter(q => q.status === 'waiting' && !q.isSkipped);
     const skippedQueues = staffQueues.filter(q => q.isSkipped);
     const nextQueue = waitingQueues[0];
