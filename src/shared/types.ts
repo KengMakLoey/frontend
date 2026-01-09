@@ -27,6 +27,7 @@ export interface StaffQueue {
   queueId: number;
   queueNumber: string;
   patientName: string;
+  phoneNumber: string; 
   vn: string;
   status: 'waiting' | 'called' | 'in_progress' | 'completed' | 'skipped';
   issuedTime: string;
@@ -37,8 +38,13 @@ export interface StaffQueue {
 export interface ApiResponse {
   success: boolean;
   message: string;
-  queueNumber?: string;
-  queueId?: number;
+  queueNumber?: string;  
+  queueId?: number;     
+  patientInfo?: {      
+    name: string;
+    phone: string;
+    queueNumber: string;
+  };
 }
 
 export type ViewType = 'landing' | 'patient' | 'staff';

@@ -115,12 +115,21 @@ export default function StaffView({ onBack }: StaffViewProps) {
   };
 
   const handleSkipQueue = async (queueId: number) => {
-    if (!confirm('คุณต้องการข้ามคิวนี้ใช่หรือไม่?\n\nคนไข้จะได้รับข้อความให้ไปรายงานตัวกับเจ้าหน้าที่')) return;
+    const queue = staffQueues.find(q => q.queueId === queueId);
+    if (!queue) return;
+
+    if (!confirm(`คุณต้องการข้ามคิวนี้ใช่หรือไม่?\n\nคนไข้: ${queue.patientName}\nเบอร์โทร: ${queue.phoneNumber}\n\nคนไข้จะได้รับข้อความให้ไปรายงานตัวกับเจ้าหน้าที่`)) return;
+    
     try {
-      await API.skipQueue(queueId, staffData?.staffName || 'staff');
+      const response = await API.skipQueue(queueId, staffData?.staffName || 'staff');
       
       if (currentCalledQueue?.queueId === queueId) {
         setCurrentCalledQueue(null);
+      }
+      
+      // Show patient contact info
+      if (response.patientInfo) {
+        alert(`ข้ามคิวแล้ว\n\nข้อมูลติดต่อคนไข้:\nชื่อ: ${response.patientInfo.name}\nเบอร์: ${response.patientInfo.phone}\nคิว: ${response.patientInfo.queueNumber}`);
       }
       
       await loadStaffQueues();
@@ -304,6 +313,10 @@ export default function StaffView({ onBack }: StaffViewProps) {
                     <p className={`${currentCalledQueue.status === 'in_progress' ? 'text-blue-200' : 'text-green-200'} text-sm mt-2`}>
                       VN: {currentCalledQueue.vn}
                     </p>
+                    <p className={`${currentCalledQueue.status === 'in_progress' ? 'text-blue-100' : 'text-green-100'} text-sm mt-1 flex items-center justify-center`}>
+                      <Phone className="w-4 h-4 mr-1" />
+                      {currentCalledQueue.phoneNumber}
+                    </p>
                   </div>
 
                   {currentCalledQueue.status === 'called' ? (
@@ -427,6 +440,10 @@ export default function StaffView({ onBack }: StaffViewProps) {
                           <div>
                             <p className="font-semibold text-gray-800">{queue.patientName}</p>
                             <p className="text-sm text-gray-500">VN: {queue.vn} | ออกคิว: {queue.issuedTime}</p>
+                            <p className="text-xs text-blue-600 flex items-center mt-1">
+                              <Phone className="w-3 h-3 mr-1" />
+                              {queue.phoneNumber}
+                            </p>
                           </div>
                         </div>
                         <div className="flex space-x-2">
@@ -489,15 +506,36 @@ export default function StaffView({ onBack }: StaffViewProps) {
                           <p className="font-bold text-orange-700">{queue.queueNumber}</p>
                           <p className="text-sm text-gray-700">{queue.patientName}</p>
                           <p className="text-xs text-gray-500">{queue.vn}</p>
+                          <p className="text-xs text-blue-600 flex items-center mt-1">
+                            <Phone className="w-3 h-3 mr-1" />
+                            {queue.phoneNumber}
+                          </p>
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleRecallSkipped(queue.queueId)}
-                        className="w-full bg-orange-500 text-white px-3 py-2 rounded-lg hover:bg-orange-600 text-sm flex items-center justify-center"
-                      >
-                        <Phone className="w-4 h-4 mr-1" />
-                        เรียกเป็นคิวถัดไป
-                      </button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => {
+                            const phoneNumber = queue.phoneNumber;
+                            const message = `โทรออกไปที่: ${phoneNumber}\n\nคนไข้: ${queue.patientName}\nคิว: ${queue.queueNumber}\nVN: ${queue.vn}`;
+                            
+                            if (window.confirm(message + '\n\nคุณต้องการโทรออกหรือไม่?')) {
+                              // Try to open phone dialer (works on mobile)
+                              window.location.href = `tel:${phoneNumber}`;
+                            }
+                          }}
+                          className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 text-sm flex items-center justify-center"
+                        >
+                          <Phone className="w-4 h-4 mr-1" />
+                          โทรติดต่อ
+                        </button>
+                        <button
+                          onClick={() => handleRecallSkipped(queue.queueId)}
+                          className="bg-orange-500 text-white px-3 py-2 rounded-lg hover:bg-orange-600 text-sm flex items-center justify-center"
+                        >
+                          <Bell className="w-4 h-4 mr-1" />
+                          เรียกคิว
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
