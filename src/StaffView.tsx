@@ -80,7 +80,6 @@ export default function StaffView({ onBack }: StaffViewProps) {
     }
   };
 
-
   if (!isStaffLoggedIn) {
     return (
       <StaffAuth
