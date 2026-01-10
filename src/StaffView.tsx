@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  UserCog, Bell, SkipForward, CheckSquare, AlertCircle, Phone
+  Bell, SkipForward, CheckSquare, AlertCircle, Phone
 } from 'lucide-react';
 import type { StaffData, StaffQueue } from './shared/types';
 import { API } from './shared/api';
+import StaffAuth from './StaffAuth';
 
 interface StaffViewProps {
   onBack: () => void;
 }
 
 export default function StaffView({ onBack }: StaffViewProps) {
-  const [staffUsername, setStaffUsername] = useState('');
-  const [staffPassword, setStaffPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isStaffLoggedIn, setIsStaffLoggedIn] = useState(false);
@@ -56,16 +55,15 @@ export default function StaffView({ onBack }: StaffViewProps) {
     };
   }, [isStaffLoggedIn, staffData, currentCalledQueue]);
 
-  const handleStaffLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!staffUsername || !staffPassword) {
+  const handleStaffLogin = async (username: string, password: string) => {
+    if (!username || !password) {
       setError('กรุณากรอกข้อมูลให้ครบ');
       return;
     }
     setLoading(true);
     setError('');
     try {
-      const result = await API.staffLogin(staffUsername, staffPassword);
+      const result = await API.staffLogin(username, password);
       if (result) {
         setIsStaffLoggedIn(true);
         setStaffData(result);
@@ -187,81 +185,15 @@ export default function StaffView({ onBack }: StaffViewProps) {
     }
   };
 
+  // If not logged in, show StaffAuth
   if (!isStaffLoggedIn) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100">
-        <div className="container mx-auto px-4 py-8">
-          <button 
-            onClick={() => {
-              onBack();
-              setStaffUsername('');
-              setStaffPassword('');
-              setError('');
-            }}
-            className="text-green-600 hover:text-green-700 mb-6 flex items-center"
-          >
-            ← กลับหน้าหลัก
-          </button>
-
-          <div className="max-w-md mx-auto">
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <div className="flex justify-center mb-6">
-                <div className="bg-green-100 p-4 rounded-full">
-                  <UserCog className="w-12 h-12 text-green-600" />
-                </div>
-              </div>
-              
-              <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">เข้าสู่ระบบเจ้าหน้าที่</h2>
-              <p className="text-center text-gray-600 mb-8">กรุณาเข้าสู่ระบบเพื่อจัดการคิว</p>
-
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">{error}</div>
-              )}
-
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-2">ชื่อผู้ใช้</label>
-                  <input
-                    type="text"
-                    value={staffUsername}
-                    onChange={(e) => setStaffUsername(e.target.value)}
-                    placeholder="Username"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
-                    disabled={loading}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-2">รหัสผ่าน</label>
-                  <input
-                    type="password"
-                    value={staffPassword}
-                    onChange={(e) => setStaffPassword(e.target.value)}
-                    placeholder="Password"
-                    onKeyDown={(e) => e.key === 'Enter' && handleStaffLogin(e)}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
-                    disabled={loading}
-                  />
-                </div>
-
-                <button
-                  onClick={handleStaffLogin}
-                  disabled={loading}
-                  className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
-                >
-                  {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
-                </button>
-              </div>
-
-              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  <strong>Demo:</strong> Username: <code>staff</code> / Password: <code>staff123</code>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <StaffAuth
+        onLogin={handleStaffLogin}
+        onBack={onBack}
+        loading={loading}
+        error={error}
+      />
     );
   }
 
@@ -289,8 +221,6 @@ export default function StaffView({ onBack }: StaffViewProps) {
               setIsStaffLoggedIn(false);
               setStaffData(null);
               onBack();
-              setStaffUsername('');
-              setStaffPassword('');
             }}
             className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
           >
@@ -313,7 +243,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
               ✕
             </button>
           </div>
-          <form onSubmit={handleCreateQueue} className="flex gap-3">
+          <div className="flex gap-3">
             <input
               type="text"
               value={newQueueVN}
@@ -321,16 +251,16 @@ export default function StaffView({ onBack }: StaffViewProps) {
               placeholder="กรอกเลข VN (ตัวอย่าง: VN202601080001)"
               className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
               disabled={loading}
+              onKeyPress={(e) => e.key === 'Enter' && handleCreateQueue(e)}
             />
             <button
-              type="submit"
+              onClick={handleCreateQueue}
               disabled={loading}
               className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 font-semibold"
             >
               {loading ? 'กำลังสร้าง...' : 'สร้างคิว'}
             </button>
             <button
-              type="button"
               onClick={() => {
                 setShowCreateQueue(false);
                 setNewQueueVN('');
@@ -339,7 +269,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
             >
               ยกเลิก
             </button>
-          </form>
+          </div>
         </div>
       )}
 
@@ -532,7 +462,6 @@ export default function StaffView({ onBack }: StaffViewProps) {
                             const message = `โทรออกไปที่: ${phoneNumber}\n\nคนไข้: ${queue.patientName}\nคิว: ${queue.queueNumber}\nVN: ${queue.vn}`;
                             
                             if (window.confirm(message + '\n\nคุณต้องการโทรออกหรือไม่?')) {
-                              // Try to open phone dialer (works on mobile)
                               window.location.href = `tel:${phoneNumber}`;
                             }
                           }}
