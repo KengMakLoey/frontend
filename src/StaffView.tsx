@@ -160,13 +160,32 @@ export default function StaffView({ onBack }: StaffViewProps) {
 
   const handleCreateQueue = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newQueueVN.trim()) {
+    let inputVN = newQueueVN.trim();
+    
+    if (!inputVN) {
       alert('กรุณากรอกเลข VN');
       return;
     }
 
-    if (!/^VN\d+$/.test(newQueueVN)) {
-      alert('รูปแบบ VN ไม่ถูกต้อง (ตัวอย่าง: VN202601080001)');
+    // Auto-format VN: รองรับหลายรูปแบบ
+    const today = new Date();
+    const yy = String(today.getFullYear()).slice(-2);
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const datePrefix = `VN${yy}${mm}${dd}-`;
+
+    // กรอกแค่ตัวเลข
+    if (/^\d+$/.test(inputVN)) {
+      inputVN = `${datePrefix}${inputVN.padStart(4, '0')}`;
+    }
+    // กรอก "VN0001"
+    else if (/^VN\d+$/.test(inputVN)) {
+      const num = inputVN.replace('VN', '');
+      inputVN = `${datePrefix}${num.padStart(4, '0')}`;
+    }
+    // กรอกเต็ม
+    else if (!/^VN\d{6}-\d{4}$/.test(inputVN)) {
+      alert('รูปแบบ VN ไม่ถูกต้อง (กรอกได้: 0001, VN0001, หรือ VN260108-0001)');
       return;
     }
 
@@ -174,7 +193,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
 
     setLoading(true);
     try {
-      const result = await API.createQueue(newQueueVN, staffData.staffId);
+      const result = await API.createQueue(inputVN, staffData.staffId);
       alert(`สร้างคิวสำเร็จ: ${result.queueNumber}`);
       setNewQueueVN('');
       setShowCreateQueue(false);
@@ -318,7 +337,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
               type="text"
               value={newQueueVN}
               onChange={(e) => setNewQueueVN(e.target.value)}
-              placeholder="กรอกเลข VN (ตัวอย่าง: VN202601080001)"
+              placeholder="ตัวอย่าง: VN0001"
               className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
               disabled={loading}
             />

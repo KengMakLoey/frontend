@@ -91,13 +91,32 @@ export default function PatientView({ onBack }: PatientViewProps) {
 
   const handlePatientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!vn.trim()) {
+    let inputVN = vn.trim();
+    
+    if (!inputVN) {
       setError('กรุณากรอกเลข VN');
       return;
     }
 
-    if (!/^VN\d+$/.test(vn)) {
-      setError('รูปแบบ VN ไม่ถูกต้อง (ตัวอย่าง: VN202601080001)');
+    // Auto-format VN: รองรับหลายรูปแบบ
+    const today = new Date();
+    const yy = String(today.getFullYear()).slice(-2);
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const datePrefix = `VN${yy}${mm}${dd}-`;
+
+    // กรอกแค่ตัวเลข เช่น "0001" หรือ "1"
+    if (/^\d+$/.test(inputVN)) {
+      inputVN = `${datePrefix}${inputVN.padStart(4, '0')}`;
+    }
+    // กรอก "VN0001" หรือ "VN1" (ไม่มีวันที่)
+    else if (/^VN\d+$/.test(inputVN)) {
+      const num = inputVN.replace('VN', '');
+      inputVN = `${datePrefix}${num.padStart(4, '0')}`;
+    }
+    // กรอกเต็ม "VN260108-0001" (ตรวจสอบรูปแบบ)
+    else if (!/^VN\d{6}-\d{4}$/.test(inputVN)) {
+      setError('รูปแบบ VN ไม่ถูกต้อง (กรอกได้: 0001, VN0001, หรือ VN260108-0001)');
       return;
     }
 
@@ -106,7 +125,7 @@ export default function PatientView({ onBack }: PatientViewProps) {
     hasPlayedSound.current = false;
 
     try {
-      const data = await API.getQueueByVN(vn);
+      const data = await API.getQueueByVN(inputVN);
       if (data) {
         setQueueData(data);
       } else {
@@ -187,7 +206,7 @@ export default function PatientView({ onBack }: PatientViewProps) {
                     type="text"
                     value={vn}
                     onChange={(e) => setVn(e.target.value)}
-                    placeholder="ตัวอย่าง: VN202601080001"
+                    placeholder="ตัวอย่าง: VN0001"
                     onKeyDown={(e) => e.key === 'Enter' && handlePatientSubmit(e)}
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-lg"
                     disabled={loading}
