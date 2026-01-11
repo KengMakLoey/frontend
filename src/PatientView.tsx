@@ -206,7 +206,7 @@ export default function PatientView({ onBack }: PatientViewProps) {
                     type="text"
                     value={vn}
                     onChange={(e) => setVn(e.target.value)}
-                    placeholder="ตัวอย่าง: VN0001"
+                    placeholder="ตัวอย่าง: VN0001 หรือ 0001"
                     onKeyDown={(e) => e.key === 'Enter' && handlePatientSubmit(e)}
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-lg"
                     disabled={loading}
@@ -236,7 +236,7 @@ export default function PatientView({ onBack }: PatientViewProps) {
                   <span className="text-blue-600 font-semibold">{queueData.department}</span>
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">คิวของคุณ</h2>
-                <p className="text-gray-600">VN: {queueData.vn}</p>
+                <p className="text-gray-600">VN: {queueData.vn.split('-').pop()}</p>
               </div>
 
               <div className={`${
