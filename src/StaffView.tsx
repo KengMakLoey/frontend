@@ -108,7 +108,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
   const currentQueue = staffQueues.find(q => q.status === 'called' || q.status === 'in_progress');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100">
+    <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
         <div className="w-32"></div>
@@ -134,7 +134,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
           {/* Left Column - Profile & Actions */}
             <div className="space-y-6">
               {/* User Profile Card */}
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ borderWidth: '2px', borderColor: '#BEBEBE' }}>
                 {/* Header Bar */}
                 <div className="py-3 text-center" style={{ backgroundColor: '#39AAAD' }}>
                   <p className="text-white font-bold">ข้อมูลผู้ใช้งาน</p>
@@ -178,7 +178,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
                 </div>
               </div>
               {/* Current Queue Card */}
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ borderWidth: '2px', borderColor: '#BEBEBE' }}>
                   {/* Header Bar */}
                   <div className="py-3 text-center" style={{ backgroundColor: '#39AAAD' }}>
                     <p className="text-white font-bold">สถานะคิวปัจจุบัน</p>
@@ -248,7 +248,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
           {/* Right Column - Stats & Queue List */}
           <div className="lg:col-span-2 space-y-6">
             {/* Statistics */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ borderWidth: '2px', borderColor: '#BEBEBE' }}>
               {/* Header Bar */}
               <div className="py-3 text-center" style={{ backgroundColor: '#39AAAD' }}>
                 <p className="text-white font-bold">สถิติวันนี้</p>
@@ -273,7 +273,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
             </div>
 
            {/* Queue List */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ borderWidth: '2px', borderColor: '#BEBEBE' }}>
               {/* Header Bar */}
               <div className="py-3 text-center" style={{ backgroundColor: '#39AAAD' }}>
                 <p className="text-white font-bold">คิวถัดไป</p>
@@ -304,7 +304,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
 
            {/* Skipped Queues */}
             {skippedQueues.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ borderWidth: '2px', borderColor: '#BEBEBE' }}>
                 {/* Header Bar */}
                 <div className="py-3 text-center" style={{ backgroundColor: '#FF4C4C' }}>
                  <p className="text-white font-bold flex items-center justify-center gap-2">

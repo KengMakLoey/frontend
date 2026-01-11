@@ -152,7 +152,7 @@ export default function QueueManagement({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+    <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-8">
        {/* Header */}
         <div className="flex justify-between items-center mb-6">
@@ -184,7 +184,7 @@ export default function QueueManagement({
           {/* Left Column - Create Queue & Waiting List */}
           <div className="space-y-6">
             {/* Create Queue */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ borderWidth: '2px', borderColor: '#BEBEBE' }}>
               <div className="bg-teal-500 py-3 text-center">
                 <p className="text-white font-bold">สร้างคิวใหม่</p>
               </div>
@@ -216,7 +216,7 @@ export default function QueueManagement({
             </div>
 
             {/* Waiting Queue List */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ borderWidth: '2px', borderColor: '#BEBEBE' }}>
               <div className="py-3 text-center" style={{ backgroundColor: '#FFAE3C' }}>
                 <p className="text-white font-bold flex items-center justify-center gap-2">
                   <Hourglass className="w-5 h-5" />
@@ -266,7 +266,7 @@ export default function QueueManagement({
           {/* Right Column - Current Queue & Skipped Queues */}
           <div className="space-y-6">
             {/* Current Queue */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ borderWidth: '2px', borderColor: '#BEBEBE' }}>
               <div className="bg-teal-500 py-3 text-center">
                 <p className="text-white font-bold">คิวปัจจุบัน</p>
               </div>
@@ -351,7 +351,7 @@ export default function QueueManagement({
             </div>
 
             {/* Skipped Queues */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ borderWidth: '2px', borderColor: '#BEBEBE' }}>
               <div className="py-3 text-center" style={{ backgroundColor: '#FF4C4C' }}>
                 <p className="text-white font-bold flex items-center justify-center gap-2">
                   <AlertCircle className="w-5 h-5" />
