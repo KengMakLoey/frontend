@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { 
-  Bell, AlertCircle, Phone, ClipboardList, BarChart3
+  Bell, AlertCircle, Phone, ClipboardList, BarChart3, User, Briefcase, Building2, Clock
 } from 'lucide-react';
 import type { StaffData, StaffQueue } from './shared/types';
 import { API } from './shared/api';
@@ -113,8 +113,6 @@ export default function StaffView({ onBack }: StaffViewProps) {
         <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-          <p className="text-gray-600">แผนก: {staffData?.departmentName || 'แผนก'}</p>
-          <p className="text-sm text-gray-500">พนักงาน: {staffData?.staffName}</p>
         </div>
         <button 
           onClick={() => {
@@ -127,6 +125,44 @@ export default function StaffView({ onBack }: StaffViewProps) {
           ออกจากระบบ
         </button>
       </div>
+      {/* User Profile Card */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-full p-4">
+                <User className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">{staffData?.staffName}</h2>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="flex items-center justify-end text-gray-600 mb-2">
+                <Briefcase className="w-4 h-4 mr-2" />
+                <span className="font-semibold">
+                  {staffData?.role === 'doctor' ? 'แพทย์' : 
+                  staffData?.role === 'nurse' ? 'พยาบาล' : 
+                  staffData?.role === 'staff' ? 'เจ้าหน้าที่' : 'พนักงาน'}
+                </span>
+              </div>
+              <div className="flex items-center justify-end text-gray-600 mb-2">
+                <Building2 className="w-4 h-4 mr-2" />
+                <span>{staffData?.departmentName}</span>
+              </div>
+              <div className="flex items-center justify-end text-gray-500 text-sm">
+                <Clock className="w-4 h-4 mr-2" />
+                <span>เข้าสู่ระบบล่าสุด: {new Date().toLocaleDateString('th-TH', { 
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })} {new Date().toLocaleTimeString('th-TH', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div className="grid lg:grid-cols-3 gap-6 mb-6">
           <div className="bg-white rounded-2xl shadow-lg p-6">
@@ -159,7 +195,17 @@ export default function StaffView({ onBack }: StaffViewProps) {
 
         <div className="grid lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">คิวปัจจุบัน</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-800">คิวปัจจุบัน</h2>
+              <div className="flex items-center text-gray-500 text-sm">
+                <Clock className="w-4 h-4 mr-1" />
+                <span>อัปเดตล่าสุด: {new Date().toLocaleTimeString('th-TH', { 
+                  hour: '2-digit', 
+                  minute: '2-digit',
+                  second: '2-digit'
+                })}</span>
+              </div>
+            </div>
             
             {currentQueue ? (
               <div className={`${
@@ -175,7 +221,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
                   {currentQueue.patientName}
                 </p>
                 <p className={`${currentQueue.status === 'in_progress' ? 'text-blue-200' : 'text-green-200'} text-sm mt-2`}>
-                  VN: {currentQueue.vn}
+                  VN: {currentQueue.vn.split('-').pop()}
                 </p>
               </div>
             ) : (

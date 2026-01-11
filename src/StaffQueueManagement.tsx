@@ -248,7 +248,7 @@ export default function QueueManagement({
                       {currentCalledQueue.patientName}
                     </p>
                     <p className={`${currentCalledQueue.status === 'in_progress' ? 'text-blue-200' : 'text-green-200'} text-sm mt-2`}>
-                      VN: {currentCalledQueue.vn}
+                      VN: {currentCalledQueue.vn.split('-').pop()}
                     </p>
                     <p className={`${currentCalledQueue.status === 'in_progress' ? 'text-blue-100' : 'text-green-100'} text-sm mt-1 flex items-center justify-center`}>
                       <Phone className="w-4 h-4 mr-1" />
