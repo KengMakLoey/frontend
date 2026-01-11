@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { 
-  Bell, AlertCircle, Phone, ClipboardList, BarChart3, User, Briefcase, Building2, Clock
+ AlertCircle, Phone, ClipboardList, User, Briefcase, Building2, Clock
 } from 'lucide-react';
 import type { StaffData, StaffQueue } from './shared/types';
 import { API } from './shared/api';
@@ -190,7 +190,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
                         <p className="text-gray-600 text-sm mb-2">คิวปัจจุบัน</p>
                         <div className="text-6xl font-bold mb-3" style={{ color: '#044C72' }}>{currentQueue.queueNumber}</div>
                         <p className="text-gray-700 mb-1">
-                          <span className="font-semibold">สถานะ:</span> <span className="font-medium">{currentQueue.status === 'in_progress' ? 'กำลังรับบริการ' : 'เรียกแล้ว'}</span>
+                          <span className="font-semibold" style={{ color: '#044C72' }}>สถานะ:</span> <span className="font-medium" style={{ color: '#044C72' }}>{currentQueue.status === 'in_progress' ? 'กำลังรับบริการ' : 'เรียกแล้ว'}</span>
                         </p>
                         
                         <button
@@ -287,7 +287,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
                         <div className="rounded-full p-3" style={{ backgroundColor: '#044C72' }}>
                           <User className="w-6 h-6 text-white" />
                         </div>
-                        <div className="text-4xl font-bold text-gray-800">{queue.queueNumber}</div>
+                        <div className="text-4xl font-bold text-gray-800" style={{ color: '#044C72' }}>{queue.queueNumber}</div>
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-gray-800 text-lg">{queue.patientName}</p>

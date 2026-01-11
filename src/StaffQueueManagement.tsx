@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { 
-  Bell, SkipForward, CheckSquare, AlertCircle, Phone, ArrowLeft, X,
-  PlusCircle
+  Bell, CheckSquare, AlertCircle, ArrowLeft, X,
+  PlusCircle,
+  Hourglass
 } from 'lucide-react';
 import type { StaffData, StaffQueue } from './shared/types';
 import { API } from './shared/api';
@@ -29,6 +30,8 @@ export default function QueueManagement({
   const [loading, setLoading] = useState(false);
   const [showCreateQueue, setShowCreateQueue] = useState(false);
   const [newQueueVN, setNewQueueVN] = useState('');
+  const [showSkipConfirm, setShowSkipConfirm] = useState(false);
+  const [queueToSkip, setQueueToSkip] = useState<StaffQueue | null>(null);
 
   useEffect(() => {
     const called = staffQueues.find(q => q.status === 'called' || q.status === 'in_progress');
@@ -62,18 +65,26 @@ export default function QueueManagement({
     const queue = staffQueues.find(q => q.queueId === queueId);
     if (!queue) return;
 
-    if (!confirm(`คุณต้องการข้ามคิวนี้ใช่หรือไม่?\n\nคนไข้: ${queue.patientName}\nเบอร์โทร: ${queue.phoneNumber}`)) return;
+    setQueueToSkip(queue);
+    setShowSkipConfirm(true);
+  };
+
+  const confirmSkipQueue = async () => {
+    if (!queueToSkip) return;
     
     try {
-      await API.skipQueue(queueId, staffData?.staffName || 'staff');
+      await API.skipQueue(queueToSkip.queueId, staffData?.staffName || 'staff');
       
-      if (currentCalledQueue?.queueId === queueId) {
+      if (currentCalledQueue?.queueId === queueToSkip.queueId) {
         setCurrentCalledQueue(null);
       }
       
       await onRefresh();
     } catch (err) {
       alert('เกิดข้อผิดพลาดในการข้ามคิว');
+    } finally {
+      setShowSkipConfirm(false);
+      setQueueToSkip(null);
     }
   };
 
@@ -180,7 +191,7 @@ export default function QueueManagement({
               <div className="p-6">
                 <form onSubmit={handleCreateQueue} className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-lg text-gray-700 mb-2" style={{color: '#044C72'}}>
                       Visit Number (หมายเลขการมาใช้บริการ)
                     </label>
                     <input
@@ -208,7 +219,7 @@ export default function QueueManagement({
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
               <div className="bg-orange-400 py-3 text-center">
                 <p className="text-white font-bold flex items-center justify-center gap-2">
-                  <Bell className="w-5 h-5" />
+                  <Hourglass className="w-5 h-5" />
                   คิวที่รออยู่
                 </p>
               </div>
@@ -262,15 +273,15 @@ export default function QueueManagement({
                 {currentCalledQueue ? (
                   <div>
                     <div className="text-center mb-4">
-                      <p className="text-gray-600 text-sm mb-2">
-                        <span className="font-semibold">สถานะ:</span> <span className="font-medium">{currentCalledQueue.status === 'in_progress' ? 'กำลังรับบริการ' : 'เรียกแล้ว'}</span>
+                      <p className="text-gray-700 mb-1">
+                        <span className="font-semibold" style={{ color: '#044C72' }}>สถานะ:</span> <span className="font-medium" style={{ color: '#044C72' }}>{currentCalledQueue.status === 'in_progress' ? 'กำลังรับบริการ' : 'เรียกแล้ว'}</span>
                       </p>
                       <div className="text-7xl font-bold mb-3" style={{ color: '#044C72' }}>
                         {currentCalledQueue.queueNumber}
                       </div>
                       <p className="font-semibold text-gray-800 text-lg">{currentCalledQueue.patientName}</p>
                       <p className="text-sm text-gray-500">VN{currentCalledQueue.vn.split('-').pop()}</p>
-                      <p className="text-sm text-gray-500 flex items-center justify-center mt-2">
+                      <p className="text-sm text-gray-500 flex items-center justify-center">
                         Tel: {currentCalledQueue.phoneNumber}
                       </p>
                     </div>
@@ -358,7 +369,19 @@ export default function QueueManagement({
                           <div className="flex-1 mx-6">
                             <p className="font-bold text-gray-800 text-lg">{queue.patientName}</p>
                             <p className="text-sm text-gray-500">VN{queue.vn.split('-').pop()}</p>
-                            <p className="text-sm" >Tel: {queue.phoneNumber}</p>
+                            <p className="text-sm text-gray-500" >Tel: {queue.phoneNumber}</p>
+                            {queue.skippedTime && (
+                              <p className="text-xs text-gray-400 mt-1">
+                                ข้ามเมื่อ: {(() => {
+                                  const date = new Date(queue.skippedTime);
+                                  date.setHours(date.getHours() + 7);
+                                  return date.toLocaleTimeString('th-TH', { 
+                                    hour: '2-digit', 
+                                    minute: '2-digit' 
+                                  });
+                                })()}
+                              </p>
+                            )}
                           </div>
                           
                           <button
@@ -372,6 +395,63 @@ export default function QueueManagement({
                         </div>
                       </div>
                     ))
+                  )}
+                  {/* Skip Confirmation Modal */}
+                  {showSkipConfirm && queueToSkip && (
+                    <div 
+                      className="fixed inset-0 flex items-center justify-center z-50"
+                      style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}
+                      onClick={() => {
+                        setShowSkipConfirm(false);
+                        setQueueToSkip(null);
+                      }}
+                    >
+                      <div 
+                        className="bg-white rounded-3xl p-8 mx-4 shadow-2xl"
+                        style={{ width: '520px', maxWidth: '70vw' }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex items-start gap-4 mb-8 relative">
+                          <div className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FF4C4C' }}>
+                            <AlertCircle className="w-10 h-10 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <button
+                              onClick={() => {
+                                setShowSkipConfirm(false);
+                                setQueueToSkip(null);
+                              }}
+                              className="absolute top-0 right-0 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              <X className="w-5 h-5" />
+                            </button>
+                            <h3 className="text-2xl font-bold text-gray-800 mb-2 pr-8">ข้ามคิว</h3>
+                            <p className="text-gray-600 text-base leading-relaxed">
+                              ไม่พบผู้รับบริการตามเลขคิว<br />
+                              ต้องการข้ามคิวหรือไม่?
+                            </p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 w-full">
+                           <button
+                            onClick={confirmSkipQueue}
+                            className="px-6 py-3 text-white rounded-xl font-bold text-base shadow-lg hover:opacity-90"
+                            style={{ backgroundColor: '#939393' }}
+                          >
+                            ยืนยัน
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowSkipConfirm(false);
+                              setQueueToSkip(null);
+                            }}
+                            className="px-6 py-3 bg-transparent border-2 border-gray-400 text-gray-500 rounded-xl hover:bg-gray-50 font-bold text-base"
+                          >
+                            ยกเลิก
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
