@@ -33,6 +33,7 @@ export interface StaffQueue {
   issuedTime: string;
   isSkipped: boolean;
   priorityScore: number;
+  skippedTime?: string;
 }
 
 export interface ApiResponse {
