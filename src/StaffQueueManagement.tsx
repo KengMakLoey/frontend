@@ -217,7 +217,7 @@ export default function QueueManagement({
 
             {/* Waiting Queue List */}
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="bg-orange-400 py-3 text-center">
+              <div className="py-3 text-center" style={{ backgroundColor: '#FFAE3C' }}>
                 <p className="text-white font-bold flex items-center justify-center gap-2">
                   <Hourglass className="w-5 h-5" />
                   คิวที่รออยู่
@@ -247,7 +247,8 @@ export default function QueueManagement({
                           {!currentCalledQueue && (
                             <button
                               onClick={() => handleCallQueue(queue)}
-                              className="bg-gradient-to-r from-green-400 to-green-500 text-white px-8 py-3 rounded-full hover:from-green-500 hover:to-green-600 font-bold flex items-center shadow-md text-lg"
+                              className="text-white px-8 py-3 rounded-full hover:from-green-500 hover:to-green-600 font-bold flex items-center shadow-md text-lg"
+                              style={{ backgroundColor: '#87E74B' }}
                             >
                               <Bell className="w-5 h-5 mr-2" />
                               เรียก
@@ -308,7 +309,8 @@ export default function QueueManagement({
                       <div className="grid grid-cols-2 gap-3">
                         <button
                           onClick={() => handleCompleteQueue(currentCalledQueue.queueId)}
-                          className="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 flex items-center justify-center font-semibold"
+                          className="text-white px-4 py-3 rounded-lg hover:bg-green-600 flex items-center justify-center font-semibold"
+                          style={{ backgroundColor: '#87E74B' }}
                         >
                           <CheckSquare className="w-5 h-5 mr-2" />
                           เสร็จสิ้น
@@ -319,7 +321,8 @@ export default function QueueManagement({
                               await handleCompleteQueue(currentCalledQueue.queueId);
                               setTimeout(() => handleCallQueue(nextQueue), 500);
                             }}
-                            className="bg-purple-500 text-white px-4 py-3 rounded-lg hover:bg-purple-600 flex items-center justify-center font-semibold"
+                            className="text-white px-4 py-3 rounded-lg hover:bg-orange-200 flex items-center justify-center font-semibold"
+                            style={{ backgroundColor: '#FFAE3C' }}
                           >
                             <Bell className="w-5 h-5 mr-2" />
                             เสร็จ & เรียกคิวถัดไป
@@ -335,7 +338,8 @@ export default function QueueManagement({
                     {nextQueue && (
                       <button
                         onClick={() => handleCallQueue(nextQueue)}
-                        className="bg-gradient-to-r from-green-400 to-green-500 text-white px-8 py-3 rounded-lg hover:from-green-500 hover:to-green-600 font-bold flex items-center mx-auto"
+                        className="text-white px-8 py-3 rounded-lg hover:from-green-500 hover:to-green-600 font-bold flex items-center mx-auto"
+                        style={{ backgroundColor: '#87E74B' }}
                       >
                         <Bell className="w-5 h-5 mr-2" />
                         เรียกคิวถัดไป ({nextQueue.queueNumber})
@@ -386,8 +390,8 @@ export default function QueueManagement({
                           
                           <button
                             onClick={() => handleRecallSkipped(queue.queueId)}
-                            className="bg-gradient-to-r from-green-400 to-green-500 text-white px-8 py-3 rounded-full hover:from-green-500 hover:to-green-600 font-bold flex items-center shadow-md text-lg"
-                            style={{ backgroundColor: '#FF4C4C' }}
+                            className="text-white px-8 py-3 rounded-full hover:from-green-500 hover:to-green-600 font-bold flex items-center shadow-md text-lg"
+                            style={{ backgroundColor: '#87E74B' }}
                           >
                             <Bell className="w-5 h-5 mr-2" />
                             คิวถัดไป

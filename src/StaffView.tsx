@@ -256,15 +256,15 @@ export default function StaffView({ onBack }: StaffViewProps) {
               
               <div className="p-6">
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl p-6 text-center">
+                  <div className="rounded-2xl p-6 text-center"style={{ backgroundColor: '#FFAE3C' }}>
                      <p className="text-white text-sm font-medium">คิวรอทั้งหมด</p>
                     <div className="text-5xl font-bold text-white mb-2">{waitingQueues.length}</div>
                   </div>
-                  <div className="bg-gradient-to-br from-green-400 to-green-500 rounded-2xl p-6 text-center">       
-                    <p className="text-white text-sm font-medium">ได้รับบริการแล้ว</p>
+                  <div className="rounded-2xl p-6 text-center" style={{ backgroundColor: '#87E74B' }}>       
+                    <p className="text-white text-sm font-medium">ให้บริการแล้ว</p>
                     <div className="text-5xl font-bold text-white mb-2">{completedQueues.length}</div>
                   </div>
-                  <div className="bg-gradient-to-br from-red-400 to-red-500 rounded-2xl p-6 text-center">
+                  <div className="rounded-2xl p-6 text-center" style={{ backgroundColor: '#FF4C4C' }}>
                     <p className="text-white text-sm font-medium">ข้าม</p>
                     <div className="text-5xl font-bold text-white mb-2">{skippedQueues.length}</div>
                   </div>
