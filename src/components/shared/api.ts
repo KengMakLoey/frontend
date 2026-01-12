@@ -15,6 +15,16 @@ export const API = {
     return response.json();
   },
 
+  async getQueueByPhone(phoneNumber: string): Promise<QueueData | null> {
+    // สมมติว่า Backend มี route /api/queue/phone/:phoneNumber
+    const response = await fetch(`${API_URL}/api/queue/phone/${phoneNumber}`);
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      throw new Error("Failed to fetch queue by phone");
+    }
+    return response.json();
+  },
+
   async staffLogin(
     username: string,
     password: string

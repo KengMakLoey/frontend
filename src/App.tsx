@@ -1,21 +1,56 @@
 import { useState } from "react";
 import { Users, UserCog, Hospital, ArrowRight } from "lucide-react";
-import type { ViewType } from "./components/shared/types";
-import PatientView from "./components/patient/PatientView";
+import type { ViewType, QueueData } from "./components/shared/types";
+import PatientVN from "./pages/PatientVN";
+import PatientStatus from "./pages/PatientStatus"; // Import PatientStatus
 import StaffView from "./StaffView";
+import { Toaster } from "./components/ui/sonner";
+
+// เพิ่ม Type ให้ View รองรับหน้าแสดงผลคิว
+type ExtendedViewType = ViewType | "queue-status";
 
 export default function App() {
-  const [view, setView] = useState<ViewType>("landing");
+  const [view, setView] = useState<ExtendedViewType>("landing");
+  const [queueData, setQueueData] = useState<QueueData | null>(null);
 
+  // 1. หน้ากรอกข้อมูลผู้ป่วย (PatientVN)
   if (view === "patient") {
-    return <PatientView onBack={() => setView("landing")} />;
+    return (
+      <>
+        <PatientVN
+          onBack={() => setView("landing")}
+          onSuccess={(data) => {
+            setQueueData(data);
+            setView("queue-status"); // เมื่อเจอคิว เปลี่ยนไปหน้าแสดงผล
+          }}
+        />
+        <Toaster />
+      </>
+    );
   }
 
+  // 2. หน้าแสดงผลสถานะคิว (PatientStatus)
+  if (view === "queue-status" && queueData) {
+    return (
+      <>
+        <PatientStatus
+          initialData={queueData}
+          onBack={() => {
+            setQueueData(null);
+            setView("landing");
+          }}
+        />
+        <Toaster />
+      </>
+    );
+  }
+
+  // 3. หน้าเจ้าหน้าที่
   if (view === "staff") {
     return <StaffView onBack={() => setView("landing")} />;
   }
 
-  // Landing Page
+  // 4. หน้า Landing Page
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       <div className="container mx-auto px-4 py-8">
@@ -71,6 +106,7 @@ export default function App() {
           </div>
         </div>
       </div>
+      <Toaster />
     </div>
   );
 }
