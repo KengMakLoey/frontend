@@ -2,12 +2,13 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Hourglass,
   Check,
+  CheckCircle,
   Volume2,
   VolumeX,
   Bell,
-  AlertTriangle,
-  XCircle,
+  X,
   Megaphone,
+  XCircle,
 } from "lucide-react";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
@@ -30,15 +31,12 @@ interface NotificationOverlayState {
   message: string;
 }
 
-export default function PatientStatus({
-  initialData,
-  onBack,
-}: PatientStatusProps) {
+export default function PatientStatus({ initialData }: PatientStatusProps) {
   const [queueData, setQueueData] = useState<QueueData>(initialData);
   const [currentTime, setCurrentTime] = useState("");
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // State สำหรับ Overlay (การแจ้งเตือนแบบเด้งบังหน้าจอ)
+  // State สำหรับ Overlay
   const [overlay, setOverlay] = useState<NotificationOverlayState>({
     visible: false,
     type: "success",
@@ -69,7 +67,7 @@ export default function PatientStatus({
   const handleQueueUpdate = useCallback(
     (updatedData: QueueData) => {
       setQueueData((prev) => {
-        // Condition 1: Called (Green) - ถึงคิวแล้ว
+        // Condition 1: Called (Green)
         if (
           updatedData.status === "called" &&
           prev.status !== "called" &&
@@ -82,12 +80,12 @@ export default function PatientStatus({
           setOverlay({
             visible: true,
             type: "success",
-            title: "ถึงคิวของท่านแล้ว!",
-            message: "กรุณาเข้าห้องตรวจทันที",
+            title: "กำลังเรียกคิวคุณ",
+            message: "กรุณาไปพบเจ้าหน้าที่ทันที",
           });
         }
 
-        // Condition 2: Skipped (Red) - ถูกข้ามคิว
+        // Condition 2: Skipped (Red)
         if (updatedData.isSkipped && !prev.isSkipped) {
           if (soundEnabled) playBeepSound();
           if ("vibrate" in navigator) navigator.vibrate([500]);
@@ -95,12 +93,12 @@ export default function PatientStatus({
           setOverlay({
             visible: true,
             type: "error",
-            title: "ท่านถูกข้ามคิว",
+            title: "พลาดคิว / ถูกข้าม",
             message: "กรุณาติดต่อเจ้าหน้าที่ที่เคาน์เตอร์",
           });
         }
 
-        // Condition 3: Near (Yellow) - ใกล้ถึงคิว
+        // Condition 3: Near (Yellow)
         if (
           updatedData.status === "waiting" &&
           updatedData.yourPosition <= 5 &&
@@ -114,7 +112,7 @@ export default function PatientStatus({
           setOverlay({
             visible: true,
             type: "warning",
-            title: "ใกล้ถึงคิวของท่าน",
+            title: "ใกล้ถึงคิว",
             message: `เหลืออีกเพียง ${updatedData.yourPosition} คิว กรุณาเตรียมตัว`,
           });
         }
@@ -155,16 +153,12 @@ export default function PatientStatus({
     hasWarnedNear.current = false;
   }, [initialData.vn]);
 
-  // --- 3. Styles & Render Helpers ---
+  // --- 3. Styles & Helpers ---
   const THEME_TEAL = "#3CAEA3";
   const THEME_DARK_BLUE = "#044C72";
   const THEME_RED = "#FF5A5A";
   const THEME_GREEN = "#87E74B";
-
-  const isWaiting = queueData.status === "waiting";
-  const isCalled = queueData.status === "called";
-  const isInProgress = queueData.status === "in_progress";
-  const isCompleted = queueData.status === "completed";
+  const THEME_YELLOW = "#FFAE3C";
 
   const renderTimelineItem = (
     stepStatus: "active" | "inactive" | "completed",
@@ -172,8 +166,6 @@ export default function PatientStatus({
     description?: string,
     isLast: boolean = false
   ) => {
-    // แก้ไข: เส้นจะเป็นสีเขียวก็ต่อเมื่อขั้นตอนนั้น "เสร็จสิ้น" แล้วเท่านั้น (completed)
-    // เพื่อให้เส้นเชื่อมไปยังขั้นตอนถัดไปเป็นสีเทาจนกว่าเราจะผ่านมันไป
     const isLineActive = stepStatus === "completed";
 
     return (
@@ -226,88 +218,141 @@ export default function PatientStatus({
     );
   };
 
-  // --- 4. Overlay Rendering Helper ---
-  const renderOverlay = () => {
+  const renderNotificationBanner = () => {
     if (!overlay.visible) return null;
 
-    let iconColor = "";
-    let Icon = Bell;
-    let buttonColor = "";
+    let iconBgColor = "";
+    const Icon = Bell;
 
     switch (overlay.type) {
       case "success":
-        iconColor = "text-[#87E74B]";
-        Icon = Megaphone;
-        buttonColor = "bg-[#87E74B]";
+        iconBgColor = "bg-[#87E74B]";
         break;
       case "warning":
-        iconColor = "text-amber-400";
-        Icon = AlertTriangle;
-        buttonColor = "bg-amber-400";
+        iconBgColor = "bg-[#FFAE3C]";
         break;
       case "error":
-        iconColor = "text-[#FF5A5A]";
-        Icon = XCircle;
-        buttonColor = "bg-[#FF5A5A]";
+        iconBgColor = "bg-[#FF5A5A]";
         break;
     }
 
     return (
-      <div
-        className="fixed inset-0 z-[999] flex items-center justify-center px-4 animate-in fade-in duration-200"
-        style={{ backgroundColor: "rgba(0, 0, 0, 0.85)" }}
-        onClick={() => setOverlay({ ...overlay, visible: false })}
-      >
+      <>
         <div
-          className="w-full max-w-sm bg-white rounded-[2rem] p-8 text-center shadow-2xl relative transform transition-all scale-100 animate-in zoom-in-95 duration-200"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="mx-auto w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
-            <Icon className={`w-10 h-10 ${iconColor} animate-bounce`} />
-          </div>
-
-          <h2 className="text-2xl font-bold mb-2 text-gray-800">
-            {overlay.title}
-          </h2>
-          <p className="text-gray-500 mb-8 leading-relaxed">
-            {overlay.message}
-          </p>
-
-          <button
-            onClick={() => setOverlay({ ...overlay, visible: false })}
-            className={`w-full py-3.5 rounded-xl text-white font-bold text-lg shadow-lg hover:opacity-90 transition-opacity ${buttonColor}`}
+          className="fixed inset-0 bg-black/60 z-[90] transition-opacity duration-300 backdrop-blur-[2px]"
+          onClick={() => setOverlay({ ...overlay, visible: false })}
+        />
+        <div className="fixed top-8 left-4 right-4 z-[100] flex justify-center pointer-events-none">
+          <div
+            className={`
+              pointer-events-auto cursor-pointer
+              w-full max-w-sm bg-white rounded-[2rem] p-4 pr-10
+              shadow-2xl
+              flex items-center gap-4
+              relative
+              animate-in slide-in-from-top duration-500 ease-out
+              border border-white/20
+            `}
           >
-            รับทราบ
-          </button>
-
-          <p className="mt-4 text-xs text-gray-400">แตะที่หน้าจอเพื่อปิด</p>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setOverlay({ ...overlay, visible: false });
+              }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div
+              className={`shrink-0 w-16 h-16 ${iconBgColor} rounded-full flex items-center justify-center shadow-lg ring-4 ring-white`}
+            >
+              <Icon className="w-8 h-8 text-white animate-[swing_1s_ease-in-out_infinite]" />
+            </div>
+            <div className="flex-1 min-w-0 py-1">
+              <h3 className="font-bold text-[#044C72] text-xl leading-tight mb-1">
+                {overlay.title}
+              </h3>
+              <p className="text-sm text-gray-500 leading-snug">
+                {overlay.message}
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      </>
     );
   };
 
+  // --- 4. Logic for Status Card (Dynamic Content) ---
+  const getStatusCardContent = () => {
+    if (queueData.isSkipped) {
+      return {
+        color: THEME_RED,
+        icon: XCircle,
+        title: "คิวของท่านถูกข้าม",
+        subtitle: "กรุณาติดต่อเจ้าหน้าที่ที่เคาน์เตอร์",
+        animate: false,
+      };
+    }
+
+    switch (queueData.status) {
+      case "called":
+      case "in_progress":
+        return {
+          color: THEME_GREEN,
+          icon: Megaphone,
+          title: "กำลังเรียกคิวคุณ",
+          subtitle: "กรุณาไปพบเจ้าหน้าที่ทันที",
+          animate: true,
+        };
+      case "completed":
+        return {
+          color: THEME_TEAL,
+          icon: CheckCircle,
+          title: "รับบริการเสร็จสิ้น",
+          subtitle: "ขอบคุณที่ใช้บริการ",
+          animate: false,
+        };
+      default: // waiting
+        if (queueData.yourPosition <= 5) {
+          return {
+            color: THEME_YELLOW,
+            icon: Hourglass,
+            title: `เหลืออีก ${queueData.yourPosition} คิว`,
+            subtitle: "ใกล้ถึงคิวแล้ว กรุณาเตรียมตัว",
+            animate: true,
+          };
+        }
+        return {
+          color: THEME_RED,
+          icon: Hourglass,
+          title: `เหลืออีก ${queueData.yourPosition} คิว`,
+          subtitle: "กรุณารอใกล้บริเวณห้องตรวจ",
+          animate: true,
+        };
+    }
+  };
+
+  const statusCard = getStatusCardContent();
+  const StatusIcon = statusCard.icon;
+
   return (
     <div className="h-[100dvh] w-full flex flex-col bg-white font-sans overflow-hidden relative">
-      {/* Overlay Component */}
-      {renderOverlay()}
+      {renderNotificationBanner()}
 
       <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-blue-50/50 to-transparent -z-10" />
 
-      {/* Header */}
       <div className="shrink-0">
         <Header />
       </div>
 
-      {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-between px-4 py-2 w-full max-w-md mx-auto overflow-hidden">
         {/* Top Section */}
         <div className="flex flex-col items-center w-full space-y-2 pt-2 md:pt-6">
-          {/* Room Pill (ตำแหน่งห้องซักประวัติ) */}
+          {/* Room Pill */}
           <div
             className="px-6 py-2 rounded-full shadow-md text-white font-bold text-lg md:text-xl tracking-wide"
             style={{ backgroundColor: THEME_TEAL }}
           >
-            {/* แสดง Room หรือ Location ที่ได้จาก API */}
             {queueData.departmentLocation || "ห้องตรวจ"}
           </div>
 
@@ -321,35 +366,35 @@ export default function PatientStatus({
             </h1>
           </div>
 
-          {/* Remaining Pill */}
-          {isWaiting && (
-            <div
-              className="w-[90%] md:w-full rounded-full py-2 px-4 flex items-center justify-center gap-3 shadow-md relative overflow-hidden"
-              style={{ backgroundColor: THEME_RED }}
-            >
-              <div className="bg-white/20 p-1.5 rounded-lg">
-                <Hourglass className="text-white w-5 h-5 md:w-6 md:h-6 animate-pulse" />
-              </div>
-              <div className="text-center text-white">
-                <p className="font-bold text-lg md:text-xl leading-none">
-                  เหลืออีก {queueData.yourPosition} คิว
-                </p>
-                <p className="text-[10px] md:text-xs opacity-90 font-light">
-                  กรุณารอใกล้บริเวณห้องตรวจ
-                </p>
-              </div>
+          {/* Dynamic Status Card (Always Visible) */}
+          <div
+            className="w-[90%] md:w-full rounded-full py-2 px-4 flex items-center justify-center gap-3 shadow-md relative overflow-hidden transition-colors duration-500"
+            style={{ backgroundColor: statusCard.color }}
+          >
+            <div className="bg-white/20 p-1.5 rounded-lg">
+              <StatusIcon
+                className={`text-white w-5 h-5 md:w-6 md:h-6 ${
+                  statusCard.animate ? "animate-pulse" : ""
+                }`}
+              />
             </div>
-          )}
+            <div className="text-center text-white">
+              <p className="font-bold text-lg md:text-xl leading-none">
+                {statusCard.title}
+              </p>
+              <p className="text-[10px] md:text-xs opacity-90 font-light">
+                {statusCard.subtitle}
+              </p>
+            </div>
+          </div>
 
-          {/* Timestamp */}
           <p className="text-gray-400 text-xs md:text-sm font-medium mt-1">
             อัปเดตล่าสุด: {currentTime} น.
           </p>
         </div>
 
-        {/* Status Card */}
+        {/* Timeline Status Card */}
         <div className="w-full bg-white rounded-[1.5rem] shadow-sm border border-gray-200 mt-2 mb-1">
-          {/* Header ที่มีความโค้งมนด้านบน (rounded-t) */}
           <div
             className="py-2.5 md:py-3 text-center text-white font-bold text-lg md:text-xl tracking-wide rounded-t-[1.5rem]"
             style={{ backgroundColor: THEME_TEAL }}
@@ -359,9 +404,11 @@ export default function PatientStatus({
 
           <div className="p-5 pl-6 md:p-6 md:pl-8">
             {renderTimelineItem(
-              isWaiting
+              queueData.status === "waiting" && !queueData.isSkipped
                 ? "active"
-                : isCalled || isInProgress || isCompleted
+                : queueData.status === "called" ||
+                  queueData.status === "in_progress" ||
+                  queueData.status === "completed"
                 ? "completed"
                 : "inactive",
               "รอเข้ารับบริการ",
@@ -369,9 +416,10 @@ export default function PatientStatus({
             )}
 
             {renderTimelineItem(
-              isCalled || isInProgress
+              queueData.status === "called" ||
+                queueData.status === "in_progress"
                 ? "active"
-                : isCompleted
+                : queueData.status === "completed"
                 ? "completed"
                 : "inactive",
               "กำลังดำเนินการบริการ",
@@ -379,7 +427,7 @@ export default function PatientStatus({
             )}
 
             {renderTimelineItem(
-              isCompleted ? "active" : "inactive",
+              queueData.status === "completed" ? "active" : "inactive",
               "ได้รับบริการเรียบร้อยแล้ว",
               "การบริการเสร็จสิ้น",
               true
@@ -401,7 +449,6 @@ export default function PatientStatus({
         </button>
       </main>
 
-      {/* Footer */}
       <div className="shrink-0 w-full z-20">
         <Footer />
       </div>
