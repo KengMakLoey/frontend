@@ -134,7 +134,7 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
           <div
             className="bg-white rounded-3xl p-5 sm:p-8 relative transition-all"
             style={{
-              border: "2px solid #6B9E36",
+              border: "2px solid #437524",
               boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
             }}
           >
