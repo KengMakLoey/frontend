@@ -3,7 +3,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Header from "../components/layout/Header.tsx";
-import { User } from "lucide-react"; // ใช้ไอคอนแทนรูปคนใน footer
+import Footer from "../components/layout/Footer";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import {
@@ -17,7 +17,7 @@ import { API } from "../components/shared/api.ts";
 import { toast } from "sonner";
 import type { QueueData } from "../components/shared/types";
 
-// --- Schema: รองรับทั้ง VN และ Phone ---
+// --- Schema ---
 const formSchema = z
   .object({
     vn: z.string().optional(),
@@ -25,14 +25,13 @@ const formSchema = z
   })
   .refine(
     (data) => {
-      // ต้องกรอกอย่างน้อย 1 ช่อง
       const hasVN = data.vn && data.vn.trim().length > 0;
       const hasPhone = data.phone && data.phone.trim().length > 0;
       return hasVN || hasPhone;
     },
     {
-      message: "กรุณากรอก Visit Number หรือ เบอร์โทรศัพท์ อย่างใดอย่างหนึ่ง",
-      path: ["vn"], // แสดง error ที่ช่อง VN
+      message: "กรุณากรอก Visit Number หรือ เบอร์โทรศัพท์",
+      path: ["vn"],
     }
   );
 
@@ -79,7 +78,6 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
       let queueData: QueueData | null = null;
       let usedMethod = "";
 
-      // 1. ลองค้นหาด้วย VN ก่อน (ถ้ามี)
       if (values.vn && values.vn.trim()) {
         const formattedVN = formatVN(values.vn);
         usedMethod = "VN";
@@ -90,7 +88,6 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
         }
       }
 
-      // 2. ถ้ายังไม่เจอ และมีการกรอกเบอร์โทร -> ลองค้นด้วยเบอร์โทร
       if (!queueData && values.phone && values.phone.trim()) {
         usedMethod = "Phone";
         try {
@@ -103,11 +100,7 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
       if (queueData) {
         onSuccess(queueData);
       } else {
-        toast.error(
-          `ไม่พบข้อมูลคิว (ตรวจสอบ ${
-            usedMethod === "VN" ? "เลข VN" : "เบอร์โทรศัพท์"
-          })`
-        );
+        toast.error(`ไม่พบข้อมูลคิว`);
         form.setError("vn", { message: "ไม่พบข้อมูล กรุณาตรวจสอบความถูกต้อง" });
       }
     } catch (error) {
@@ -118,34 +111,37 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      {/* Header เดิมของระบบ */}
-      <Header />
+    <div className="h-[100dvh] w-full flex flex-col bg-white font-sans overflow-hidden">
+      {/* Header */}
+      <div className="shrink-0">
+        <Header />
+      </div>
 
-      <main className="flex-1 flex flex-col items-center justify-start pt-8 sm:pt-12 px-4">
-        {/* Main Heading */}
-        <div className="text-center space-y-1 mb-8">
-          <h1 className="text-[#044C72] text-4xl font-bold tracking-tight">
-            ตรวจสอบคิว
-          </h1>
-          <p className="text-gray-400 text-sm font-light">
-            ตรวจสอบคิวของท่านด้วยเลข VN
-          </p>
-        </div>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col items-center justify-center px-4 w-full pb-4">
+        {/* Wrapper */}
+        <div className="w-full max-w-[320px] sm:max-w-md space-y-4 sm:space-y-6">
+          {/* Title Section - สีน้ำเงินเข้ม */}
+          <div className="text-center space-y-1">
+            <h1 className="text-[#044C72] text-2xl sm:text-4xl font-bold tracking-tight">
+              ตรวจสอบคิว
+            </h1>
+            <p className="text-gray-400 text-xs sm:text-sm font-light">
+              ตรวจสอบคิวของท่านด้วยเลข VN
+            </p>
+          </div>
 
-        {/* Card Form - Styling ตามรูปภาพ */}
-        <div className="w-full max-w-sm">
           <div
-            className="bg-white rounded-[2rem] p-6 sm:p-8 relative"
+            className="bg-white rounded-3xl p-5 sm:p-8 relative transition-all"
             style={{
-              border: "2px solid #6B9E36", // ขอบสีเขียวตามรูป
+              border: "2px solid #6B9E36",
               boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
             }}
           >
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-5"
+                className="space-y-3 sm:space-y-5"
               >
                 {/* VN Input */}
                 <FormField
@@ -153,17 +149,20 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
                   name="vn"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <label className="text-[#044C72] text-sm font-medium ml-1">
-                        Visit Number (หมายเลขการมาใช้บริการ)
+                      <label className="text-[#044C72] text-sm font-medium ml-1 block">
+                        Visit Number{" "}
+                        <span className="text-[#044C72]/70 font-normal text-xs hidden sm:inline">
+                          (หมายเลขการมาใช้บริการ)
+                        </span>
                       </label>
                       <FormControl>
                         <Input
-                          placeholder="ตัวอย่าง: VN123112313"
-                          className="h-11 border-[#BEBEBE] rounded-lg text-gray-600 placeholder:text-gray-300"
+                          placeholder="ตัวอย่าง: VN..."
+                          className="h-10 sm:h-12 border-[#BEBEBE] rounded-xl text-sm sm:text-base text-gray-700 placeholder:text-gray-300 focus:border-[#6B9E36] focus:ring-[#6B9E36]/20 transition-all"
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-[10px] sm:text-sm pl-1" />
                     </FormItem>
                   )}
                 />
@@ -174,33 +173,33 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
                   name="phone"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <label className="text-[#044C72] text-sm font-medium ml-1">
+                      <label className="text-[#044C72] text-sm font-medium ml-1 block">
                         เบอร์โทรศัพท์
                       </label>
                       <FormControl>
                         <Input
-                          placeholder="ตัวอย่าง: 0888888888"
-                          className="h-11 border-[#BEBEBE] rounded-lg text-gray-600 placeholder:text-gray-300"
+                          placeholder="ตัวอย่าง: 08..."
+                          className="h-10 sm:h-12 border-[#BEBEBE] rounded-xl text-sm sm:text-base text-gray-700 placeholder:text-gray-300 focus:border-[#6B9E36] focus:ring-[#6B9E36]/20 transition-all"
                           type="tel"
                           maxLength={10}
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-[10px] sm:text-sm pl-1" />
                     </FormItem>
                   )}
                 />
 
                 {/* Submit Button */}
-                <div className="pt-4 flex justify-center">
+                <div className="pt-2 sm:pt-4 flex justify-center">
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-40 h-12 text-white font-bold text-lg rounded-2xl transition-all hover:scale-105"
+                    className="w-full sm:w-48 h-10 sm:h-12 text-white font-bold text-base sm:text-lg rounded-2xl shadow-md transition-all active:scale-[0.98]"
                     style={{
                       background:
-                        "linear-gradient(to bottom, #87E74B, #72D238)",
-                      boxShadow: "0 4px 6px rgba(114, 210, 56, 0.4)",
+                        "linear-gradient(to bottom, #87E74B, #72D238)", // สีปุ่มเขียว
+                      boxShadow: "0 4px 10px rgba(114, 210, 56, 0.3)",
                     }}
                   >
                     {isLoading ? "กำลังค้นหา..." : "ตรวจสอบคิว"}
@@ -212,25 +211,9 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
         </div>
       </main>
 
-      {/* Custom Footer ตามรูปภาพ */}
-      <footer
-        className="py-8 px-4 text-center mt-auto"
-        style={{ backgroundColor: "#39AAAD" }} // สีพื้นหลัง Teal ตามรูป
-      >
-        <div className="container mx-auto space-y-2">
-          <p className="text-white text-sm sm:text-base font-medium drop-shadow-sm">
-            หากท่านได้ทำการออกหน้านี้
-          </p>
-          <p className="text-white text-sm sm:text-base font-medium drop-shadow-sm pb-2">
-            ท่านสามารถสแกนคิวอาร์โค้ดใหม่ เพื่อเข้าดูหน้าคิวได้อีกครั้ง
-          </p>
-
-          <div className="flex items-center justify-center gap-2 text-white/90 text-xs sm:text-sm mt-4">
-            <span>หากมีข้อสงสัย กรุณาติดต่อเจ้าหน้าที่</span>
-            <User className="w-4 h-4 fill-white" />
-          </div>
-        </div>
-      </footer>
+      <div className="shrink-0 w-full">
+        <Footer />
+      </div>
     </div>
   );
 };

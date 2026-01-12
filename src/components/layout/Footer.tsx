@@ -2,7 +2,7 @@ import { QrCode } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="bg-[#1F3A60] text-white py-6 px-4">
+    <footer className="bg-[#39AAAD] text-white py-6 px-4">
       <div className="container mx-auto text-center space-y-4">
         <div className="text-sm leading-relaxed text-white/90">
           <p>หากท่านได้ทำการออกหน้านี้</p>
