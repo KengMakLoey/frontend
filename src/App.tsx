@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Users, UserCog, Hospital, ArrowRight } from "lucide-react";
-import type { ViewType, QueueData } from "./components/shared/types"; // Import QueueData เพิ่ม
-import PatientVN from "./pages/PatientVN"; // ใช้ไฟล์ PatientVN ที่แก้แล้ว
+import type { ViewType, QueueData } from "./components/shared/types";
+import PatientVN from "./pages/PatientVN";
+import PatientStatus from "./pages/PatientStatus"; // Import PatientStatus
 import StaffView from "./StaffView";
-import { Toaster } from "./components/ui/sonner"; // อย่าลืมใส่ Toaster เพื่อให้ toast ทำงาน
+import { Toaster } from "./components/ui/sonner";
 
 // เพิ่ม Type ให้ View รองรับหน้าแสดงผลคิว
 type ExtendedViewType = ViewType | "queue-status";
@@ -28,24 +29,19 @@ export default function App() {
     );
   }
 
-  // 2. หน้าแสดงผลสถานะคิว (QueueDisplay)
+  // 2. หน้าแสดงผลสถานะคิว (PatientStatus)
   if (view === "queue-status" && queueData) {
     return (
-      <div className="min-h-screen bg-blue-50 p-4">
-        <div className="max-w-2xl mx-auto pt-8">
-          {/* ปุ่มย้อนกลับไปหน้า Landing */}
-          <button
-            onClick={() => {
-              setQueueData(null);
-              setView("landing");
-            }}
-            className="text-blue-600 hover:text-blue-700 mb-6 flex items-center"
-          >
-            ← กลับหน้าหลัก
-          </button>
-        </div>
+      <>
+        <PatientStatus
+          initialData={queueData}
+          onBack={() => {
+            setQueueData(null);
+            setView("landing");
+          }}
+        />
         <Toaster />
-      </div>
+      </>
     );
   }
 
@@ -68,7 +64,7 @@ export default function App() {
 
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
           <div
-            onClick={() => setView("patient")} // กดแล้วไปหน้า PatientVN
+            onClick={() => setView("patient")}
             className="bg-white rounded-2xl shadow-lg p-8 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-400"
           >
             <div className="flex flex-col items-center text-center h-full">
