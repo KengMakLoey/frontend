@@ -1,11 +1,18 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  // เพิ่ม 'as any' ต่อท้าย react()
+  plugins: [react() as any],
+
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
   server: {
-    // https://stackoverflow.com/a/74430384
     proxy: {
       "/api": {
         target: "http://localhost:3000",

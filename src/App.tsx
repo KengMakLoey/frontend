@@ -1,21 +1,60 @@
 import { useState } from "react";
 import { Users, UserCog, Hospital, ArrowRight } from "lucide-react";
-import type { ViewType } from "./components/shared/types";
-import PatientView from "./components/patient/PatientView";
+import type { ViewType, QueueData } from "./components/shared/types"; // Import QueueData เพิ่ม
+import PatientVN from "./pages/PatientVN"; // ใช้ไฟล์ PatientVN ที่แก้แล้ว
 import StaffView from "./StaffView";
+import { Toaster } from "./components/ui/sonner"; // อย่าลืมใส่ Toaster เพื่อให้ toast ทำงาน
+
+// เพิ่ม Type ให้ View รองรับหน้าแสดงผลคิว
+type ExtendedViewType = ViewType | "queue-status";
 
 export default function App() {
-  const [view, setView] = useState<ViewType>("landing");
+  const [view, setView] = useState<ExtendedViewType>("landing");
+  const [queueData, setQueueData] = useState<QueueData | null>(null);
 
+  // 1. หน้ากรอกข้อมูลผู้ป่วย (PatientVN)
   if (view === "patient") {
-    return <PatientView onBack={() => setView("landing")} />;
+    return (
+      <>
+        <PatientVN
+          onBack={() => setView("landing")}
+          onSuccess={(data) => {
+            setQueueData(data);
+            setView("queue-status"); // เมื่อเจอคิว เปลี่ยนไปหน้าแสดงผล
+          }}
+        />
+        <Toaster />
+      </>
+    );
   }
 
+  // 2. หน้าแสดงผลสถานะคิว (QueueDisplay)
+  if (view === "queue-status" && queueData) {
+    return (
+      <div className="min-h-screen bg-blue-50 p-4">
+        <div className="max-w-2xl mx-auto pt-8">
+          {/* ปุ่มย้อนกลับไปหน้า Landing */}
+          <button
+            onClick={() => {
+              setQueueData(null);
+              setView("landing");
+            }}
+            className="text-blue-600 hover:text-blue-700 mb-6 flex items-center"
+          >
+            ← กลับหน้าหลัก
+          </button>
+        </div>
+        <Toaster />
+      </div>
+    );
+  }
+
+  // 3. หน้าเจ้าหน้าที่
   if (view === "staff") {
     return <StaffView onBack={() => setView("landing")} />;
   }
 
-  // Landing Page
+  // 4. หน้า Landing Page
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       <div className="container mx-auto px-4 py-8">
@@ -29,7 +68,7 @@ export default function App() {
 
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
           <div
-            onClick={() => setView("patient")}
+            onClick={() => setView("patient")} // กดแล้วไปหน้า PatientVN
             className="bg-white rounded-2xl shadow-lg p-8 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-400"
           >
             <div className="flex flex-col items-center text-center h-full">
@@ -71,6 +110,7 @@ export default function App() {
           </div>
         </div>
       </div>
+      <Toaster />
     </div>
   );
 }
