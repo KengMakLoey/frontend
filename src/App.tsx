@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Users, UserCog, Hospital, ArrowRight } from "lucide-react";
 import type { ViewType, QueueData } from "./components/shared/types";
 import PatientVN from "./pages/PatientVN";
-import PatientStatus from "./pages/PatientStatus"; // Import PatientStatus
+import PatientStatus from "./pages/PatientStatus"; // Import หน้าใหม่
 import StaffView from "./StaffView";
 import { Toaster } from "./components/ui/sonner";
 
@@ -21,7 +21,7 @@ export default function App() {
           onBack={() => setView("landing")}
           onSuccess={(data) => {
             setQueueData(data);
-            setView("queue-status"); // เมื่อเจอคิว เปลี่ยนไปหน้าแสดงผล
+            setView("queue-status"); // เมื่อเจอคิว เปลี่ยนไปหน้าแสดงผล PatientStatus
           }}
         />
         <Toaster />
@@ -64,7 +64,7 @@ export default function App() {
 
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
           <div
-            onClick={() => setView("patient")}
+            onClick={() => setView("patient")} // กดแล้วไปหน้า PatientVN
             className="bg-white rounded-2xl shadow-lg p-8 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-400"
           >
             <div className="flex flex-col items-center text-center h-full">
