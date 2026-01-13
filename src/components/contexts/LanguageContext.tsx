@@ -1,9 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 
 // 1. เพิ่ม Type ภาษา จีน (cn) และ พม่า (mm)
 export type LanguageCode = "th" | "en" | "cn" | "mm";

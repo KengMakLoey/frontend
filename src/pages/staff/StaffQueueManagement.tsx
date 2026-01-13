@@ -38,7 +38,6 @@ export default function QueueManagement({
   const skippedQueues = staffQueues.filter((q) => q.isSkipped);
   const nextQueue = waitingQueues[0];
   const [loading, setLoading] = useState(false);
-  const [showCreateQueue, setShowCreateQueue] = useState(false);
   const [newQueueVN, setNewQueueVN] = useState("");
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const [queueToSkip, setQueueToSkip] = useState<StaffQueue | null>(null);
@@ -156,7 +155,6 @@ export default function QueueManagement({
       const result = await API.createQueue(inputVN, staffData.staffId);
       alert(`สร้างคิวสำเร็จ: ${result.queueNumber}`);
       setNewQueueVN("");
-      setShowCreateQueue(false);
       await onRefresh();
     } catch (err) {
       const error = err as Error;
