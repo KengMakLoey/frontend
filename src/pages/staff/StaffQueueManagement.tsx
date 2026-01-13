@@ -8,8 +8,8 @@ import {
   PlusCircle,
   Hourglass,
 } from "lucide-react";
-import type { StaffData, StaffQueue } from "./components/shared/types";
-import { API } from "./components/shared/api";
+import type { StaffData, StaffQueue } from "../../components/shared/types";
+import { API } from "../../components/shared/api";
 
 interface QueueManagementProps {
   staffData: StaffData | null;

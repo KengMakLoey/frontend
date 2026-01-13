@@ -7,15 +7,19 @@ import {
   Briefcase,
   Building2,
   Clock,
+  LogOut, // เพิ่ม icon logout
 } from "lucide-react";
-import type { StaffData, StaffQueue } from "./components/shared/types";
-import { API } from "./components/shared/api";
+import type { StaffData, StaffQueue } from "../../components/shared/types";
+import { API } from "../../components/shared/api";
 import StaffAuth from "./StaffAuth";
 import QueueManagement from "./StaffQueueManagement";
+import StaffHeader from "../../components/layout/StaffHeader";
 
 interface StaffViewProps {
   onBack: () => void;
 }
+
+type StaffViewType = "dashboard" | "queue" | "account";
 
 export default function StaffView({ onBack }: StaffViewProps) {
   const [loading, setLoading] = useState(false);
@@ -23,10 +27,11 @@ export default function StaffView({ onBack }: StaffViewProps) {
   const [isStaffLoggedIn, setIsStaffLoggedIn] = useState(false);
   const [staffData, setStaffData] = useState<StaffData | null>(null);
   const [staffQueues, setStaffQueues] = useState<StaffQueue[]>([]);
-  const [currentView, setCurrentView] = useState<"dashboard" | "queue">(
-    "dashboard"
-  );
 
+  // เปลี่ยน state ให้รองรับ type ใหม่
+  const [currentView, setCurrentView] = useState<StaffViewType>("dashboard");
+
+  // ... (Keep existing useEffect hooks) ...
   useEffect(() => {
     let isMounted = true;
     let intervalId: NodeJS.Timeout | null = null;
@@ -56,6 +61,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
     };
   }, [isStaffLoggedIn, staffData]);
 
+  // ... (Keep handleStaffLogin function) ...
   const handleStaffLogin = async (username: string, password: string) => {
     if (!username || !password) {
       setError("กรุณากรอกข้อมูลให้ครบ");
@@ -88,6 +94,14 @@ export default function StaffView({ onBack }: StaffViewProps) {
     }
   };
 
+  const handleLogout = () => {
+    setIsStaffLoggedIn(false);
+    setStaffData(null);
+    onBack();
+  };
+
+  // --- RENDER ---
+
   if (!isStaffLoggedIn) {
     return (
       <StaffAuth
@@ -99,31 +113,74 @@ export default function StaffView({ onBack }: StaffViewProps) {
     );
   }
 
-  if (currentView === "queue") {
-    return (
-      <QueueManagement
-        staffData={staffData}
-        staffQueues={staffQueues}
-        onBack={() => setCurrentView("dashboard")}
-        onRefresh={loadStaffQueues}
-      />
+  // Wrapper function เพื่อแสดง Content ตามเมนูที่เลือก
+  const renderContent = () => {
+    if (currentView === "queue") {
+      return (
+        <QueueManagement
+          staffData={staffData}
+          staffQueues={staffQueues}
+          onBack={() => setCurrentView("dashboard")}
+          onRefresh={loadStaffQueues}
+        />
+      );
+    }
+
+    // [เพิ่ม] หน้า Account (แบบเรียบง่าย)
+    if (currentView === "account") {
+      return (
+        <div className="container mx-auto px-4 py-8 max-w-2xl">
+          <h1 className="text-3xl font-bold text-gray-800 mb-6">
+            บัญชีผู้ใช้งาน
+          </h1>
+          <div className="bg-white rounded-2xl shadow-xl border-2 border-[#BEBEBE] overflow-hidden">
+            <div className="bg-[#044C72] py-4 text-center">
+              <User className="w-16 h-16 text-white mx-auto" />
+              <h2 className="text-white text-xl font-bold mt-2">
+                {staffData?.staffName}
+              </h2>
+            </div>
+            <div className="p-8 space-y-4">
+              <div className="flex justify-between border-b pb-2">
+                <span className="text-gray-500">ตำแหน่ง</span>
+                <span className="font-semibold text-gray-800 capitalize">
+                  {staffData?.role}
+                </span>
+              </div>
+              <div className="flex justify-between border-b pb-2">
+                <span className="text-gray-500">แผนก</span>
+                <span className="font-semibold text-gray-800">
+                  {staffData?.departmentName}
+                </span>
+              </div>
+              <div className="pt-6">
+                <button
+                  onClick={handleLogout}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
+                >
+                  <LogOut className="w-5 h-5" />
+                  ออกจากระบบ
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Default: Dashboard View
+    const waitingQueues = staffQueues.filter(
+      (q) => q.status === "waiting" && !q.isSkipped
     );
-  }
+    const skippedQueues = staffQueues.filter((q) => q.isSkipped);
+    const completedQueues = staffQueues.filter((q) => q.status === "completed");
+    const currentQueue = staffQueues.find(
+      (q) => q.status === "called" || q.status === "in_progress"
+    );
 
-  const waitingQueues = staffQueues.filter(
-    (q) => q.status === "waiting" && !q.isSkipped
-  );
-  const skippedQueues = staffQueues.filter((q) => q.isSkipped);
-  const completedQueues = staffQueues.filter((q) => q.status === "completed");
-  const currentQueue = staffQueues.find(
-    (q) => q.status === "called" || q.status === "in_progress"
-  );
-
-  return (
-    <div className="min-h-screen bg-white">
+    return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <div className="w-32"></div>
           <div className="flex items-center gap-2">
             <svg
               className="w-8 h-8 text-teal-600"
@@ -134,16 +191,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
             </svg>
             <h1 className="text-3xl font-bold text-gray-800">หน้าหลัก</h1>
           </div>
-          <button
-            onClick={() => {
-              setIsStaffLoggedIn(false);
-              setStaffData(null);
-              onBack();
-            }}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-          >
-            ออกจากระบบ
-          </button>
+          {/* ปุ่ม Logout เดิมถูกย้ายไปหน้า Account หรือจะคงไว้ก็ได้ แต่ใน Navbar มี Account แล้ว */}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -154,14 +202,12 @@ export default function StaffView({ onBack }: StaffViewProps) {
               className="bg-white rounded-2xl shadow-xl overflow-hidden"
               style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
             >
-              {/* Header Bar */}
               <div
                 className="py-3 text-center"
                 style={{ backgroundColor: "#39AAAD" }}
               >
                 <p className="text-white font-bold">ข้อมูลผู้ใช้งาน</p>
               </div>
-
               <div className="p-6">
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-full p-3">
@@ -173,14 +219,8 @@ export default function StaffView({ onBack }: StaffViewProps) {
                     </h2>
                     <div className="flex items-center text-gray-600 text-sm mt-1">
                       <Briefcase className="w-3 h-3 mr-1" />
-                      <span className="font-medium">
-                        {staffData?.role === "doctor"
-                          ? "แพทย์"
-                          : staffData?.role === "nurse"
-                          ? "พยาบาล"
-                          : staffData?.role === "staff"
-                          ? "เจ้าหน้าที่"
-                          : "พนักงาน"}
+                      <span className="font-medium capitalize">
+                        {staffData?.role}
                       </span>
                     </div>
                   </div>
@@ -207,19 +247,18 @@ export default function StaffView({ onBack }: StaffViewProps) {
                 </div>
               </div>
             </div>
+
             {/* Current Queue Card */}
             <div
               className="bg-white rounded-2xl shadow-xl overflow-hidden"
               style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
             >
-              {/* Header Bar */}
               <div
                 className="py-3 text-center"
                 style={{ backgroundColor: "#39AAAD" }}
               >
                 <p className="text-white font-bold">สถานะคิวปัจจุบัน</p>
               </div>
-
               <div className="p-6">
                 {currentQueue ? (
                   <div className="text-center">
@@ -246,7 +285,6 @@ export default function StaffView({ onBack }: StaffViewProps) {
                           : "เรียกแล้ว"}
                       </span>
                     </p>
-
                     <button
                       onClick={() => setCurrentView("queue")}
                       className="w-full bg-gradient-to-r from-green-400 to-green-500 text-white px-6 py-3 rounded-xl hover:from-green-500 hover:to-green-600 font-bold mt-4 flex items-center justify-center"
@@ -254,24 +292,11 @@ export default function StaffView({ onBack }: StaffViewProps) {
                       <ClipboardList className="w-5 h-5 mr-2" />
                       ไปจัดการคิว
                     </button>
-
-                    <div className="flex items-center justify-center text-gray-400 text-xs mt-4">
-                      <Clock className="w-3 h-3 mr-1" />
-                      <span>
-                        อัปเดตข้อมูลล่าสุด:{" "}
-                        {new Date().toLocaleTimeString("th-TH", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}{" "}
-                        น.
-                      </span>
-                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-8">
                     <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                     <p className="text-gray-500 mb-4">ไม่มีคิวปัจจุบัน</p>
-
                     <button
                       onClick={() => setCurrentView("queue")}
                       className="w-full bg-gradient-to-r from-green-400 to-green-500 text-white px-6 py-3 rounded-xl hover:from-green-500 hover:to-green-600 font-bold flex items-center justify-center"
@@ -279,24 +304,11 @@ export default function StaffView({ onBack }: StaffViewProps) {
                       <ClipboardList className="w-5 h-5 mr-2" />
                       ไปจัดการคิว
                     </button>
-
-                    <div className="flex items-center justify-center text-gray-400 text-xs mt-4">
-                      <Clock className="w-3 h-3 mr-1" />
-                      <span>
-                        อัปเดตข้อมูลล่าสุด:{" "}
-                        {new Date().toLocaleTimeString("th-TH", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}{" "}
-                        น.
-                      </span>
-                    </div>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Quick Actions */}
             <div className="space-y-3">
               <button
                 onClick={loadStaffQueues}
@@ -307,21 +319,19 @@ export default function StaffView({ onBack }: StaffViewProps) {
             </div>
           </div>
 
-          {/* Right Column - Stats & Queue List */}
+          {/* Right Column - Stats & Queue List (คงเดิม) */}
           <div className="lg:col-span-2 space-y-6">
             {/* Statistics */}
             <div
               className="bg-white rounded-2xl shadow-xl overflow-hidden"
               style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
             >
-              {/* Header Bar */}
               <div
                 className="py-3 text-center"
                 style={{ backgroundColor: "#39AAAD" }}
               >
                 <p className="text-white font-bold">สถิติวันนี้</p>
               </div>
-
               <div className="p-6">
                 <div className="grid grid-cols-3 gap-4">
                   <div
@@ -364,14 +374,12 @@ export default function StaffView({ onBack }: StaffViewProps) {
               className="bg-white rounded-2xl shadow-xl overflow-hidden"
               style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
             >
-              {/* Header Bar */}
               <div
                 className="py-3 text-center"
                 style={{ backgroundColor: "#39AAAD" }}
               >
                 <p className="text-white font-bold">คิวถัดไป</p>
               </div>
-
               <div className="p-6">
                 <div className="space-y-3">
                   {waitingQueues.slice(0, 4).map((queue) => (
@@ -412,13 +420,12 @@ export default function StaffView({ onBack }: StaffViewProps) {
               </div>
             </div>
 
-            {/* Skipped Queues */}
+            {/* Skipped Queues (คงเดิม) */}
             {skippedQueues.length > 0 && (
               <div
                 className="bg-white rounded-2xl shadow-xl overflow-hidden"
                 style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
               >
-                {/* Header Bar */}
                 <div
                   className="py-3 text-center"
                   style={{ backgroundColor: "#FF4C4C" }}
@@ -428,7 +435,6 @@ export default function StaffView({ onBack }: StaffViewProps) {
                     คิวที่ถูกข้าม
                   </p>
                 </div>
-
                 <div className="p-6">
                   <div className="space-y-3 max-h-64 overflow-y-auto">
                     {skippedQueues.slice(0, 4).map((queue) => (
@@ -471,6 +477,20 @@ export default function StaffView({ onBack }: StaffViewProps) {
           </div>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* ใช้งาน StaffHeader แทน Header ธรรมดา */}
+      <StaffHeader
+        currentView={currentView}
+        onNavigate={setCurrentView}
+        staffName={staffData?.staffName}
+      />
+
+      {/* เนื้อหาหลัก */}
+      {renderContent()}
     </div>
   );
 }
