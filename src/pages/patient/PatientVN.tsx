@@ -197,7 +197,7 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
                     disabled={isLoading}
                     className="w-full sm:w-48 h-10 sm:h-12 text-white font-bold text-base sm:text-lg rounded-2xl shadow-md transition-all active:scale-[0.98]"
                     style={{
-                      background: "#87E74B", // สีปุ่มเขียว
+                      background: "#87E74B",
                       boxShadow: "0 4px 10px rgba(114, 210, 56, 0.3)",
                     }}
                   >
