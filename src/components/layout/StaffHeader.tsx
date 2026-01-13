@@ -1,5 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Check, Home, PlusSquare, User } from "lucide-react";
+import {
+  ChevronDown,
+  Check,
+  Home,
+  PlusSquare,
+  User,
+  Monitor,
+} from "lucide-react"; // 1. เพิ่ม Monitor
 import {
   useLanguage,
   LANGUAGES,
@@ -7,21 +14,16 @@ import {
 } from "../contexts/LanguageContext";
 
 interface StaffHeaderProps {
-  currentView: "dashboard" | "queue" | "account";
-  onNavigate: (view: "dashboard" | "queue" | "account") => void;
+  currentView: "dashboard" | "queue" | "account" | "display"; // 2. เพิ่ม Type display
+  onNavigate: (view: "dashboard" | "queue" | "account" | "display") => void; // 3. อัปเดต Type onNavigate
   staffName?: string;
 }
 
-const StaffHeader = ({
-  currentView,
-  onNavigate,
-  staffName,
-}: StaffHeaderProps) => {
+const StaffHeader = ({ currentView, onNavigate }: StaffHeaderProps) => {
   const { currentLanguage, setLanguage } = useLanguage();
   const [isLangOpen, setIsLangOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // ปิด Dropdown เมื่อคลิกข้างนอก
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -35,7 +37,6 @@ const StaffHeader = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ฟังก์ชันสำหรับกำหนด Class ของเมนู (Active/Inactive)
   const getMenuClass = (viewName: string) => {
     const isActive = currentView === viewName;
     return `flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer font-bold text-sm sm:text-base
@@ -49,7 +50,6 @@ const StaffHeader = ({
   return (
     <header className="bg-white shadow-sm border-b border-gray-100 py-3 px-4 sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between">
-        {/* --- ส่วนที่ 1: Logo (เหมือนหน้าผู้ป่วย) --- */}
         <div
           className="flex items-center gap-4 cursor-pointer"
           onClick={() => onNavigate("dashboard")}
@@ -69,9 +69,7 @@ const StaffHeader = ({
           </div>
         </div>
 
-        {/* --- ส่วนที่ 2: เมนูนำทาง (Navigation) & Language --- */}
         <div className="flex items-center gap-2 sm:gap-6">
-          {/* เมนูหน้าหลัก */}
           <button
             className={getMenuClass("dashboard")}
             onClick={() => onNavigate("dashboard")}
@@ -80,7 +78,6 @@ const StaffHeader = ({
             <span className="hidden sm:inline">หน้าหลัก</span>
           </button>
 
-          {/* เมนูจัดการคิว */}
           <button
             className={getMenuClass("queue")}
             onClick={() => onNavigate("queue")}
@@ -89,7 +86,15 @@ const StaffHeader = ({
             <span className="hidden sm:inline">จัดการคิว</span>
           </button>
 
-          {/* เมนู ACCOUNT */}
+          {/* 4. เพิ่มปุ่ม Display */}
+          <button
+            className={getMenuClass("display")}
+            onClick={() => onNavigate("display")}
+          >
+            <Monitor className="w-5 h-5" strokeWidth={2.5} />
+            <span className="hidden sm:inline">จอแสดงผล</span>
+          </button>
+
           <button
             className={getMenuClass("account")}
             onClick={() => onNavigate("account")}
@@ -98,10 +103,8 @@ const StaffHeader = ({
             <span className="hidden sm:inline uppercase">Account</span>
           </button>
 
-          {/* เส้นคั่นแนวตั้ง */}
           <div className="h-6 w-[1px] bg-gray-200 mx-1"></div>
 
-          {/* ปุ่มเปลี่ยนภาษา (Language Switcher) */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsLangOpen(!isLangOpen)}
@@ -126,7 +129,6 @@ const StaffHeader = ({
               />
             </button>
 
-            {/* Dropdown Menu */}
             {isLangOpen && (
               <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-50">
                 {LANGUAGES.map((lang) => (

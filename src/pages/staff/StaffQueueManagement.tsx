@@ -267,7 +267,7 @@ export default function QueueManagement({
                       ไม่มีคิวที่รออยู่
                     </div>
                   ) : (
-                    waitingQueues.map((queue, index) => (
+                    waitingQueues.map((queue) => (
                       <div
                         key={queue.queueId}
                         className="bg-white rounded-3xl px-6 py-4 border-2 border-gray-200 hover:border-teal-300 transition-colors shadow-sm"
