@@ -30,7 +30,7 @@ const Header = () => {
         {/* Logo and Hospital Name */}
         <div className="flex items-center gap-4">
           <img
-            src="/logo.png"
+            src="/logo.svg"
             alt="Nakornping Hospital Logo"
             className="h-12 w-auto object-contain"
           />
