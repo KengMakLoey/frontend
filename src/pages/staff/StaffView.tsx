@@ -7,7 +7,7 @@ import {
   Briefcase,
   Building2,
   Clock,
-  LogOut, // เพิ่ม icon logout
+  LogOut,
 } from "lucide-react";
 import type { StaffData, StaffQueue } from "../../components/shared/types";
 import { API } from "../../components/shared/api";
@@ -15,11 +15,15 @@ import StaffAuth from "./StaffAuth";
 import QueueManagement from "./StaffQueueManagement";
 import StaffHeader from "../../components/layout/StaffHeader";
 
+// 1. Import StaffDisplay จาก folder ใหม่
+import StaffDisplay from "../staff-display/StaffDisplay";
+
 interface StaffViewProps {
   onBack: () => void;
 }
 
-type StaffViewType = "dashboard" | "queue" | "account";
+// 2. เพิ่ม type 'display'
+type StaffViewType = "dashboard" | "queue" | "account" | "display";
 
 export default function StaffView({ onBack }: StaffViewProps) {
   const [loading, setLoading] = useState(false);
@@ -28,10 +32,8 @@ export default function StaffView({ onBack }: StaffViewProps) {
   const [staffData, setStaffData] = useState<StaffData | null>(null);
   const [staffQueues, setStaffQueues] = useState<StaffQueue[]>([]);
 
-  // เปลี่ยน state ให้รองรับ type ใหม่
   const [currentView, setCurrentView] = useState<StaffViewType>("dashboard");
 
-  // ... (Keep existing useEffect hooks) ...
   useEffect(() => {
     let isMounted = true;
     let intervalId: NodeJS.Timeout | null = null;
@@ -61,7 +63,6 @@ export default function StaffView({ onBack }: StaffViewProps) {
     };
   }, [isStaffLoggedIn, staffData]);
 
-  // ... (Keep handleStaffLogin function) ...
   const handleStaffLogin = async (username: string, password: string) => {
     if (!username || !password) {
       setError("กรุณากรอกข้อมูลให้ครบ");
@@ -100,8 +101,6 @@ export default function StaffView({ onBack }: StaffViewProps) {
     onBack();
   };
 
-  // --- RENDER ---
-
   if (!isStaffLoggedIn) {
     return (
       <StaffAuth
@@ -115,6 +114,11 @@ export default function StaffView({ onBack }: StaffViewProps) {
 
   // Wrapper function เพื่อแสดง Content ตามเมนูที่เลือก
   const renderContent = () => {
+    // 3. เพิ่ม case สำหรับ display
+    if (currentView === "display") {
+      return <StaffDisplay onBack={() => setCurrentView("dashboard")} />;
+    }
+
     if (currentView === "queue") {
       return (
         <QueueManagement
@@ -126,7 +130,6 @@ export default function StaffView({ onBack }: StaffViewProps) {
       );
     }
 
-    // [เพิ่ม] หน้า Account (แบบเรียบง่าย)
     if (currentView === "account") {
       return (
         <div className="container mx-auto px-4 py-8 max-w-2xl">
@@ -180,7 +183,8 @@ export default function StaffView({ onBack }: StaffViewProps) {
 
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
+        {/* แก้จาก justify-between เป็น justify-center ตรงนี้ครับ */}
+        <div className="flex justify-center items-center mb-6">
           <div className="flex items-center gap-2">
             <svg
               className="w-8 h-8 text-teal-600"
@@ -189,13 +193,14 @@ export default function StaffView({ onBack }: StaffViewProps) {
             >
               <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
             </svg>
-            <h1 className="text-3xl font-bold text-gray-800">หน้าหลัก</h1>
+            <h1 className="text-4xl font-bold text-gray-800 text-center">
+              หน้าหลัก
+            </h1>
           </div>
-          {/* ปุ่ม Logout เดิมถูกย้ายไปหน้า Account หรือจะคงไว้ก็ได้ แต่ใน Navbar มี Account แล้ว */}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Left Column - Profile & Actions */}
+          {/* Left Column */}
           <div className="space-y-6">
             {/* User Profile Card */}
             <div
@@ -319,9 +324,8 @@ export default function StaffView({ onBack }: StaffViewProps) {
             </div>
           </div>
 
-          {/* Right Column - Stats & Queue List (คงเดิม) */}
+          {/* Right Column - Stats & Queue List */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Statistics */}
             <div
               className="bg-white rounded-2xl shadow-xl overflow-hidden"
               style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
@@ -369,7 +373,6 @@ export default function StaffView({ onBack }: StaffViewProps) {
               </div>
             </div>
 
-            {/* Queue List */}
             <div
               className="bg-white rounded-2xl shadow-xl overflow-hidden"
               style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
@@ -420,7 +423,6 @@ export default function StaffView({ onBack }: StaffViewProps) {
               </div>
             </div>
 
-            {/* Skipped Queues (คงเดิม) */}
             {skippedQueues.length > 0 && (
               <div
                 className="bg-white rounded-2xl shadow-xl overflow-hidden"
@@ -482,12 +484,14 @@ export default function StaffView({ onBack }: StaffViewProps) {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* ใช้งาน StaffHeader แทน Header ธรรมดา */}
-      <StaffHeader
-        currentView={currentView}
-        onNavigate={setCurrentView}
-        staffName={staffData?.staffName}
-      />
+      {/* 4. ซ่อน Header ถ้าเป็นหน้า display */}
+      {currentView !== "display" && (
+        <StaffHeader
+          currentView={currentView}
+          onNavigate={setCurrentView}
+          staffName={staffData?.staffName}
+        />
+      )}
 
       {/* เนื้อหาหลัก */}
       {renderContent()}
