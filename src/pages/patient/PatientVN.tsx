@@ -2,20 +2,20 @@ import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Header from "../components/layout/Header.tsx";
-import Footer from "../components/layout/Footer";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
+import Header from "../../components/layout/Header.tsx";
+import Footer from "../../components/layout/Footer.tsx";
+import { Button } from "../../components/ui/button.tsx";
+import { Input } from "../../components/ui/input.tsx";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "../components/ui/form";
-import { API } from "../components/shared/api.ts";
+} from "../../components/ui/form.tsx";
+import { API } from "../../components/shared/api.ts";
 import { toast } from "sonner";
-import type { QueueData } from "../components/shared/types";
+import type { QueueData } from "../../components/shared/types.ts";
 
 // --- Schema ---
 const formSchema = z
@@ -197,8 +197,7 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
                     disabled={isLoading}
                     className="w-full sm:w-48 h-10 sm:h-12 text-white font-bold text-base sm:text-lg rounded-2xl shadow-md transition-all active:scale-[0.98]"
                     style={{
-                      background:
-                        "linear-gradient(to bottom, #87E74B, #72D238)", // สีปุ่มเขียว
+                      background: "#87E74B", // สีปุ่มเขียว
                       boxShadow: "0 4px 10px rgba(114, 210, 56, 0.3)",
                     }}
                   >

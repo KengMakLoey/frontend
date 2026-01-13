@@ -1,3 +1,6 @@
+/* 1. นำเข้าฟอนต์ Inter (สำหรับอังกฤษ/ตัวเลข) และ Prompt (สำหรับไทย) */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Prompt:wght@300;400;500;600;700&display=swap");
+
 @import "tailwindcss";
 
 @plugin "tailwindcss-animate";
@@ -5,6 +8,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* 2. กำหนดฟอนต์หลักของระบบ (font-sans) ให้ใช้ Inter คู่กับ Prompt */
+  --font-sans: "Inter", "Prompt", sans-serif;
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -119,6 +125,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    /* 3. บังคับใช้ฟอนต์กับ Body เพื่อความชัวร์ */
+    @apply bg-background text-foreground font-sans;
   }
 }
