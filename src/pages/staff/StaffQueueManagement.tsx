@@ -211,7 +211,7 @@ export default function QueueManagement({
               className="bg-white rounded-2xl shadow-xl overflow-hidden"
               style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
             >
-              <div className="bg-teal-500 py-3 text-center">
+              <div className=" py-3 text-center" style={{ backgroundColor: "#39AAAD" }}>
                 <p className="text-white font-bold">สร้างคิวใหม่</p>
               </div>
               <div className="p-6">
@@ -318,7 +318,7 @@ export default function QueueManagement({
               className="bg-white rounded-2xl shadow-xl overflow-hidden"
               style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
             >
-              <div className="bg-teal-500 py-3 text-center">
+              <div className="py-3 text-center" style={{ backgroundColor: "#39AAAD" }}>
                 <p className="text-white font-bold">คิวปัจจุบัน</p>
               </div>
               <div className="p-6">
