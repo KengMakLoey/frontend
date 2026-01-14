@@ -400,7 +400,11 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
               </p>
             </div>
           </div>
-
+              
+          
+          <p className="text-gray-400 text-xs md:text-sm font-medium mt-1">
+            VN{queueData.vn.split("-").pop()}
+          </p>
           <p className="text-gray-400 text-xs md:text-sm font-medium mt-1">
             อัปเดตล่าสุด: {currentTime} น.
           </p>
