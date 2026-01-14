@@ -1,15 +1,20 @@
 import { useState } from "react";
 import { ArrowLeft, Monitor } from "lucide-react";
-import DisplayScreen from "./DisplayScreen"; // เปลี่ยนชื่อ import
+import DisplayScreen from "./DisplayScreen";
 
-// ข้อมูลจำลองแผนก
+// ข้อมูลแผนกให้ตรงกับฐานข้อมูล
 const DEPARTMENTS = [
-  { id: 1, name: "อายุรกรรม", label: "Medicine" },
-  { id: 2, name: "ศัลยกรรม", label: "Surgery" },
-  { id: 3, name: "กุมารเวชกรรม", label: "Pediatrics" },
-  { id: 4, name: "สูติ-นรีเวชกรรม", label: "Obstetrics-Gynecology" },
-  { id: 5, name: "ทันตกรรม", label: "Dentistry" },
-  { id: 6, name: "ตรวจสุขภาพ", label: "Check-up Center" },
+  { id: 1, name: "คลินิกศัลยกรรมทางเดินปัสสาวะ", label: "Urology" },
+  { id: 2, name: "คลินิกกุมาร", label: "Pediatrics" },
+  { id: 3, name: "คลินิกสูติ-นรีเวช", label: "Obstetrics-Gynecology" },
+  { id: 4, name: "คลินิกโรคเรื้อรัง", label: "NCD Clinic" },
+  { id: 5, name: "คลินิกพิเศษอายุรกรรม", label: "Special Medicine" },
+  { id: 6, name: "ไตเทียม", label: "Dialysis" },
+  { id: 7, name: "คลินิกอายุรกรรม", label: "Medicine" },
+  { id: 8, name: "คลินิกตา", label: "Ophthalmology" },
+  { id: 9, name: "คลินิกทันตกรรม", label: "Dentistry" },
+  { id: 10, name: "คลินิกหู คอ จมูก", label: "ENT" },
+  { id: 11, name: "ห้องตรวจสุขภาพพิเศษ", label: "Special Check-up" },
 ];
 
 export default function StaffDisplay({ onBack }: { onBack: () => void }) {
