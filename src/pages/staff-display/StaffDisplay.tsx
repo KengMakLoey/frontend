@@ -34,14 +34,14 @@ export default function StaffDisplay({ onBack }: { onBack: () => void }) {
   // หน้าเลือกแผนก
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8">
-      <div className="max-w-4xl w-full">
-        <div className="flex items-center justify-between mb-8">
+      <div className="w-full max-w-6xl">
+        <div className="flex items-center justify-center mb-8 relative">
           <button
             onClick={onBack}
-            className="flex items-center text-gray-500 hover:text-[#044C72] transition-colors"
+            className="flex items-center text-gray-500 hover:text-[#044C72] transition-colors absolute left-0"
           >
             <ArrowLeft className="w-6 h-6 mr-2" />
-            กลับหน้าหลัก
+            กลับ
           </button>
           <h1 className="text-3xl font-bold text-[#044C72] flex items-center gap-3">
             <Monitor className="w-8 h-8" />
@@ -49,7 +49,7 @@ export default function StaffDisplay({ onBack }: { onBack: () => void }) {
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {DEPARTMENTS.map((dept) => (
             <button
               key={dept.id}
