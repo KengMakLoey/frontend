@@ -76,7 +76,7 @@ export default function DisplayScreen({
 
         <div className="relative z-10 p-8 flex flex-col h-full items-center text-center">
           <img
-            src="/logo.png"
+            src="/logo.svg"
             alt="logo"
             className="w-32 h-auto mb-6 drop-shadow-md"
           />

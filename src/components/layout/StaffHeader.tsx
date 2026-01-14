@@ -55,7 +55,7 @@ const StaffHeader = ({ currentView, onNavigate }: StaffHeaderProps) => {
           onClick={() => onNavigate("dashboard")}
         >
           <img
-            src="/logo.png"
+            src="/logo.svg"
             alt="Nakornping Hospital Logo"
             className="h-10 w-auto object-contain sm:h-12"
           />
