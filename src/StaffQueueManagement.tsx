@@ -184,8 +184,11 @@ export default function QueueManagement({
           {/* Left Column - Create Queue & Waiting List */}
           <div className="space-y-6">
             {/* Create Queue */}
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ borderWidth: '2px', borderColor: '#BEBEBE' }}>
-              <div className="py-3 text-center" style={{ backgroundColor: '#39AAAD' }}>
+            <div
+              className="bg-white rounded-2xl shadow-xl overflow-hidden"
+              style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
+            >
+              <div className=" py-3 text-center" style={{ backgroundColor: "#39AAAD" }}>
                 <p className="text-white font-bold">สร้างคิวใหม่</p>
               </div>
               <div className="p-6">
@@ -266,8 +269,11 @@ export default function QueueManagement({
           {/* Right Column - Current Queue & Skipped Queues */}
           <div className="space-y-6">
             {/* Current Queue */}
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ borderWidth: '2px', borderColor: '#BEBEBE' }}>
-              <div className="py-3 text-center" style={{ backgroundColor: '#39AAAD' }}>
+            <div
+              className="bg-white rounded-2xl shadow-xl overflow-hidden"
+              style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
+            >
+              <div className="py-3 text-center" style={{ backgroundColor: "#39AAAD" }}>
                 <p className="text-white font-bold">คิวปัจจุบัน</p>
               </div>
               <div className="p-6">
