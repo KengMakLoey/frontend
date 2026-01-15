@@ -478,14 +478,11 @@ export default function QueueManagement({
                             {queue.skippedTime && (
                               <p className="text-xs text-gray-400 mt-1">
                                 ข้ามเมื่อ:{" "}
-                                {(() => {
-                                  const date = new Date(queue.skippedTime);
-                                  date.setHours(date.getHours());
-                                  return date.toLocaleTimeString("th-TH", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  });
-                                })()}
+                                {new Date(queue.skippedTime).toLocaleTimeString("th-TH", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  timeZone: "Asia/Bangkok",
+                                })}
                               </p>
                             )}
                           </div>
