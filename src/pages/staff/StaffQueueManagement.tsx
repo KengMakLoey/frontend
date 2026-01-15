@@ -480,7 +480,7 @@ export default function QueueManagement({
                                 ข้ามเมื่อ:{" "}
                                 {(() => {
                                   const date = new Date(queue.skippedTime);
-                                  date.setHours(date.getHours() + 7);
+                                  date.setHours(date.getHours());
                                   return date.toLocaleTimeString("th-TH", {
                                     hour: "2-digit",
                                     minute: "2-digit",
