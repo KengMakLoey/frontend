@@ -7,7 +7,7 @@ import {
 } from "../contexts/LanguageContext";
 
 const Header = () => {
-  const { currentLanguage, setLanguage } = useLanguage();
+  const { currentLanguage, setLanguage, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -36,15 +36,15 @@ const Header = () => {
           />
           <div className="flex flex-col justify-center">
             <h1 className="text-[#005691] font-bold text-xl leading-tight">
-              โรงพยาบาลนครพิงค์
+              {t.common.hospital_name}
             </h1>
             <p className="text-[#005691] text-base font-normal leading-tight">
-              Nakornping Hospital
+              {t.common.hospital_sub}
             </p>
           </div>
         </div>
 
-        {/* Language Switcher Dropdown (Pill Shape with Flag) */}
+        {/* Language Switcher Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -56,12 +56,9 @@ const Header = () => {
                   : "border-[#39AAAD] bg-white hover:bg-gray-50"
               }
             `}
-            style={{ minWidth: "80px", justifyContent: "space-between" }} // กำหนดความกว้างให้ดูสมส่วนแบบ Pill
+            style={{ minWidth: "80px", justifyContent: "space-between" }}
           >
-            {/* Flag Icon (SVG from Context) */}
             <div className="flex-shrink-0">{currentLanguage.flag}</div>
-
-            {/* Teal Chevron Icon */}
             <ChevronDown
               className={`w-5 h-5 text-[#39AAAD] transition-transform duration-200 ${
                 isOpen ? "rotate-180" : ""
@@ -70,7 +67,6 @@ const Header = () => {
             />
           </button>
 
-          {/* Dropdown Menu Content */}
           {isOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-50">
               {LANGUAGES.map((lang) => (
@@ -89,7 +85,6 @@ const Header = () => {
                   `}
                 >
                   <span className="flex items-center gap-3">
-                    {/* Flag in Dropdown */}
                     <span className="scale-110">{lang.flag}</span>
                     <span className="text-base">{lang.label}</span>
                   </span>
