@@ -7,12 +7,29 @@ import React, {
 
 import type { Dictionary } from "../../lang/types";
 
+// Import ภาษาเดิม
 import { th } from "../../lang/th";
 import { en } from "../../lang/en";
 import { cn } from "../../lang/cn";
 import { mm } from "../../lang/mm";
+import { es } from "../../lang/es";
+import { la } from "../../lang/la";
+import { jp } from "../../lang/jp";
+import { kr } from "../../lang/kr";
+import { shn } from "../../lang/shn";
+import { km } from "../../lang/km";
 
-export type LanguageCode = "th" | "en" | "cn" | "mm";
+export type LanguageCode =
+  | "th"
+  | "en"
+  | "cn"
+  | "mm"
+  | "es"
+  | "la"
+  | "jp"
+  | "kr"
+  | "shn"
+  | "km";
 
 export interface Language {
   code: LanguageCode;
@@ -20,23 +37,28 @@ export interface Language {
   flag: ReactNode;
 }
 
+// Dictionary
 const DICTIONARIES: Record<LanguageCode, Dictionary> = {
   th: th,
   en: en,
   cn: cn,
   mm: mm,
+  es: es,
+  la: la,
+  jp: jp,
+  kr: kr,
+  shn: shn,
+  km: km,
 };
 
-// สร้าง Component ย่อยเพื่อคุม Style ของธงให้เหมือนกันทุกอัน
 const FlagIcon = ({ src, alt }: { src: string; alt: string }) => (
   <img
     src={src}
     alt={alt}
-    className="w-6 h-6 rounded-full shadow-sm object-cover"
+    className="w-6 h-6 rounded-full shadow-sm object-cover border border-black/10"
   />
 );
 
-// แก้ไขส่วน LANGUAGES ให้เรียกใช้ไฟล์จาก public/flags/ แทน
 export const LANGUAGES: Language[] = [
   {
     code: "th",
@@ -57,6 +79,36 @@ export const LANGUAGES: Language[] = [
     code: "mm",
     label: "မြန်မာ",
     flag: <FlagIcon src="/flags/mm.svg" alt="Myanmar Flag" />,
+  },
+  {
+    code: "la",
+    label: "ລາວ",
+    flag: <FlagIcon src="/flags/la.svg" alt="Laos Flag" />,
+  },
+  {
+    code: "shn",
+    label: "ၽႃႇသႃႇတႆး", // ไทใหญ่
+    flag: <FlagIcon src="/flags/shn.svg" alt="Shan Flag" />,
+  },
+  {
+    code: "km",
+    label: "ខ្មែរ",
+    flag: <FlagIcon src="/flags/km.svg" alt="Cambodia Flag" />,
+  },
+  {
+    code: "es",
+    label: "Español",
+    flag: <FlagIcon src="/flags/es.svg" alt="Spain Flag" />,
+  },
+  {
+    code: "jp",
+    label: "日本語",
+    flag: <FlagIcon src="/flags/jp.svg" alt="Japan Flag" />,
+  },
+  {
+    code: "kr",
+    label: "한국어",
+    flag: <FlagIcon src="/flags/kr.svg" alt="South Korea Flag" />,
   },
 ];
 
@@ -80,7 +132,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setLanguageCode(code);
   };
 
-  // เลือก Dictionary ตามภาษาปัจจุบัน
   const t = DICTIONARIES[languageCode];
 
   return (
