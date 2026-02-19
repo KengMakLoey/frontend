@@ -49,13 +49,13 @@ const StaffHeader = ({ currentView, onNavigate }: StaffHeaderProps) => {
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-100 py-3 px-4 sticky top-0 z-50">
-      <div className="container mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div className="container mx-auto flex items-center justify-between">
         <div
           className="flex items-center gap-4 cursor-pointer"
           onClick={() => onNavigate("dashboard")}
         >
           <img
-            src="/logo.svg"
+            src="/logo.png"
             alt="Nakornping Hospital Logo"
             className="h-10 w-auto object-contain sm:h-12"
           />
@@ -69,8 +69,7 @@ const StaffHeader = ({ currentView, onNavigate }: StaffHeaderProps) => {
           </div>
         </div>
 
-        <div className="w-full sm:w-auto flex items-center justify-center sm:justify-end gap-3 sm:gap-6">
-
+        <div className="flex items-center gap-2 sm:gap-6">
           <button
             className={getMenuClass("dashboard")}
             onClick={() => onNavigate("dashboard")}

@@ -198,7 +198,8 @@ export default function StaffView({ onBack }: StaffViewProps) {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+
           {/* Left Column */}
           <div className="space-y-6">
             {/* User Profile Card */}
@@ -439,39 +440,37 @@ export default function StaffView({ onBack }: StaffViewProps) {
                 <div className="p-6">
                   <div className="space-y-3 max-h-64 overflow-y-auto">
                     {skippedQueues.slice(0, 4).map((queue) => (
-                  <div
-                    key={queue.queueId}
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-orange-50 rounded-xl p-4 border-2 border-orange-200"
-                  >
-                    <div className="flex items-center gap-4">
                       <div
-                        className="rounded-full p-3"
-                        style={{ backgroundColor: "#FF4C4C" }}
+                        key={queue.queueId}
+                        className="flex items-center justify-between bg-orange-50 rounded-xl p-4 border-2 border-orange-200"
                       >
-                        <User className="w-6 h-6 text-white" />
+                        <div className="flex items-center gap-4">
+                          <div
+                            className="rounded-full p-3"
+                            style={{ backgroundColor: "#FF4C4C" }}
+                          >
+                            <User className="w-6 h-6 text-white" />
+                          </div>
+                          <div className="text-4xl font-bold text-orange-700">
+                            {queue.queueNumber}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-gray-800 text-lg">
+                            {queue.patientName}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            VN{queue.vn.split("-").pop()}
+                          </p>
+                          <p
+                            className="text-sm flex items-center justify-end mt-1"
+                            style={{ color: "#FF4C4C" }}
+                          >
+                            <Phone className="w-4 h-4 mr-1" />
+                            {queue.phoneNumber}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-3xl sm:text-4xl font-bold text-orange-700">
-                        {queue.queueNumber}
-                      </div>
-                    </div>
-
-                    <div className="text-left sm:text-right">
-                      <p className="font-bold text-gray-800 text-lg">
-                        {queue.patientName}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        VN{queue.vn.split("-").pop()}
-                      </p>
-                      <p
-                        className="text-sm flex items-center sm:justify-end mt-1"
-                        style={{ color: "#FF4C4C" }}
-                      >
-                        <Phone className="w-4 h-4 mr-1" />
-                        {queue.phoneNumber}
-                      </p>
-                    </div>
-                  </div>
-
                     ))}
                   </div>
                 </div>
