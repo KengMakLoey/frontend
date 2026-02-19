@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Volume2, VolumeX, X } from "lucide-react"; // เหลือไว้เฉพาะไอคอน UI ทั่วไป
+import { Volume2, VolumeX, X } from "lucide-react";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 import type { QueueData } from "../../components/shared/types";
 import { API } from "../../components/shared/api";
 import { useQueueWebSocket } from "../../components/shared/useWebSocket";
 import { playBeepSound, playTTS } from "../../components/shared/soundUtils";
+import { useLanguage } from "../../components/contexts/LanguageContext";
 
 interface PatientStatusProps {
   initialData: QueueData;
@@ -22,11 +23,11 @@ interface NotificationOverlayState {
 }
 
 export default function PatientStatus({ initialData }: PatientStatusProps) {
+  const { t, currentLanguage } = useLanguage();
   const [queueData, setQueueData] = useState<QueueData>(initialData);
   const [currentTime, setCurrentTime] = useState("");
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // State สำหรับ Overlay
   const [overlay, setOverlay] = useState<NotificationOverlayState>({
     visible: false,
     type: "success",
@@ -41,17 +42,18 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
+      const locale = currentLanguage.code === "th" ? "th-TH" : "en-US";
       setCurrentTime(
-        now.toLocaleTimeString("th-TH", {
+        now.toLocaleTimeString(locale, {
           hour: "2-digit",
           minute: "2-digit",
-        })
+        }),
       );
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [currentLanguage.code]);
 
   // --- 2. Real-time Logic ---
   const handleQueueUpdate = useCallback(
@@ -64,9 +66,9 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
           !hasPlayedSound.current
         ) {
           if (soundEnabled) {
-            const message = `ขอเชิญหมายเลขคิว ${updatedData.queueNumber} ที่${
-              updatedData.departmentLocation || "ห้องตรวจ"
-            } ค่ะ`;
+            const locationLabel =
+              updatedData.departmentLocation || t.status.room;
+            const message = `${t.status.called} ${updatedData.queueNumber} ${locationLabel}`;
             playTTS(message);
           }
 
@@ -76,15 +78,15 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
           setOverlay({
             visible: true,
             type: "success",
-            title: "กำลังเรียกคิวคุณ",
-            message: "กรุณาไปพบเจ้าหน้าที่ทันที",
+            title: t.patient_status.alert_called_title,
+            message: t.patient_status.alert_called_message,
           });
         }
 
         // Condition 2: Skipped (Red) -> ถูกข้าม
         if (updatedData.isSkipped && !prev.isSkipped) {
           if (soundEnabled) {
-            const message = `หมายเลขคิว ${updatedData.queueNumber} ถูกข้าม กรุณาติดต่อเจ้าหน้าที่ค่ะ`;
+            const message = `${t.status.skipped} ${updatedData.queueNumber}`;
             playTTS(message);
           }
           if ("vibrate" in navigator) navigator.vibrate([500]);
@@ -92,8 +94,8 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
           setOverlay({
             visible: true,
             type: "error",
-            title: "พลาดคิว / ถูกข้าม",
-            message: "ระบบได้ข้ามคิวของท่าน กรุณาติดต่อเจ้าหน้าที่",
+            title: t.patient_status.alert_skipped_title,
+            message: t.patient_status.alert_skipped_message,
           });
         }
 
@@ -113,22 +115,27 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
           setOverlay({
             visible: true,
             type: "warning",
-            title: "ใกล้ถึงคิว",
-            message: `เหลืออีกประมาณ ${updatedData.yourPosition} คิว กรุณาเตรียมตัว`,
+            title: t.patient_status.alert_near_title,
+            message: t.patient_status.alert_near_message.replace(
+              "{count}",
+              updatedData.yourPosition.toString(),
+            ),
           });
         }
 
         return updatedData;
       });
     },
-    [soundEnabled]
+    [soundEnabled, t],
   );
 
   const { isConnected } = useQueueWebSocket(initialData.vn, handleQueueUpdate);
 
   useEffect(() => {
     let isMounted = true;
-    let intervalId: NodeJS.Timeout | null = null;
+    // --- แก้ไขจุดที่ Error ตรงนี้ ---
+    // เปลี่ยนจาก NodeJS.Timeout เป็น ReturnType<typeof setInterval>
+    let intervalId: ReturnType<typeof setInterval> | null = null;
 
     if (!isConnected) {
       intervalId = setInterval(async () => {
@@ -165,7 +172,7 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
     stepStatus: "active" | "inactive" | "completed",
     title: string,
     description?: string,
-    isLast: boolean = false
+    isLast: boolean = false,
   ) => {
     const isLineActive = stepStatus === "completed";
 
@@ -187,11 +194,10 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
               className="w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center shadow-md transition-all duration-300 scale-100"
               style={{ backgroundColor: THEME_GREEN }}
             >
-              {/* ใช้รูป check-symbol.svg แทน Icon */}
               <img
                 src="/check-symbol.svg"
                 alt="check"
-                className="w-4 h-4 md:w-5 md:h-5 brightness-0 invert" // invert ให้เป็นสีขาว
+                className="w-4 h-4 md:w-5 md:h-5 brightness-0 invert"
               />
             </div>
           ) : (
@@ -227,7 +233,6 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
     let iconBgColor = "";
     let iconSrc = "";
 
-    // กำหนด Icon และสีตามประเภท Overlay
     switch (overlay.type) {
       case "success": // Called
         iconBgColor = "bg-[#87E74B]";
@@ -235,7 +240,7 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
         break;
       case "warning": // Near
         iconBgColor = "bg-[#FFAE3C]";
-        iconSrc = "/bell.svg"; // หรือใช้ sandclock ก็ได้ แต่ปกติแจ้งเตือนใช้กระดิ่ง
+        iconSrc = "/bell.svg";
         break;
       case "error": // Skipped
         iconBgColor = "bg-[#FF5A5A]";
@@ -293,14 +298,13 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
     );
   };
 
-  // --- 4. Logic for Status Card (Dynamic Content) ---
   const getStatusCardContent = () => {
     if (queueData.isSkipped) {
       return {
         color: THEME_RED,
         iconPath: "/warning-triangle.svg",
-        title: "พลาดคิว / ถูกข้าม",
-        subtitle: "ระบบได้ข้ามคิวของท่าน กรุณาติดต่อเจ้าหน้าที่",
+        title: t.patient_status.alert_skipped_title,
+        subtitle: t.patient_status.alert_skipped_message,
         animate: false,
       };
     }
@@ -311,16 +315,16 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
         return {
           color: THEME_GREEN,
           iconPath: "/bell.svg",
-          title: "กำลังเรียกคิวคุณ",
-          subtitle: "กรุณาไปพบเจ้าหน้าที่ทันที",
+          title: t.patient_status.alert_called_title,
+          subtitle: t.patient_status.alert_called_message,
           animate: true,
         };
       case "completed":
         return {
           color: THEME_TEAL,
           iconPath: "/check-symbol.svg",
-          title: "รับบริการเสร็จสิ้น",
-          subtitle: "ขอบคุณที่ใช้บริการ",
+          title: t.status.completed,
+          subtitle: t.common.hospital_name,
           animate: false,
         };
       default: // waiting
@@ -328,16 +332,25 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
           return {
             color: THEME_YELLOW,
             iconPath: "/sandclock.svg",
-            title: `เหลืออีก ${queueData.yourPosition} คิว`,
-            subtitle: "กรุณาเตรียมตัว และอยู่ใกล้ห้องตรวจ",
+            title: t.status.queue_count.replace(
+              "{count}",
+              queueData.yourPosition.toString(),
+            ),
+            subtitle: t.patient_status.alert_near_message.replace(
+              "{count}",
+              queueData.yourPosition.toString(),
+            ),
             animate: true,
           };
         }
         return {
           color: THEME_RED,
           iconPath: "/sandclock.svg",
-          title: `เหลืออีก ${queueData.yourPosition} คิว`,
-          subtitle: "กรุณารอใกล้บริเวณห้องตรวจ",
+          title: t.status.queue_count.replace(
+            "{count}",
+            queueData.yourPosition.toString(),
+          ),
+          subtitle: t.status.please_wait,
           animate: true,
         };
     }
@@ -362,7 +375,7 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
             className="px-6 py-2 rounded-full shadow-md text-white font-bold text-lg md:text-xl tracking-wide"
             style={{ backgroundColor: THEME_TEAL }}
           >
-            {queueData.departmentLocation || "ห้องตรวจ"}
+            {queueData.departmentLocation || t.status.room}
           </div>
 
           {/* Queue Number */}
@@ -382,7 +395,6 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
             style={{ backgroundColor: statusCard.color }}
           >
             <div className="bg-white/20 p-1.5 rounded-lg flex items-center justify-center">
-              {/* ใช้ <img> แทน Lucide Icon */}
               <img
                 src={statusCard.iconPath}
                 alt="status-icon"
@@ -402,7 +414,10 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
           </div>
 
           <p className="text-gray-400 text-xs md:text-sm font-medium mt-1">
-            อัปเดตล่าสุด: {currentTime} น.
+            VN{queueData.vn.split("-").pop()}
+          </p>
+          <p className="text-gray-400 text-xs md:text-sm font-medium mt-1">
+            {t.patient_status.last_update.replace("{time}", currentTime)}
           </p>
         </div>
 
@@ -412,7 +427,7 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
             className="py-2.5 md:py-3 text-center text-white font-bold text-lg md:text-xl tracking-wide rounded-t-[1.5rem]"
             style={{ backgroundColor: THEME_TEAL }}
           >
-            สถานะคิวของท่าน
+            {t.patient_status.timeline_title}
           </div>
 
           <div className="p-5 pl-6 md:p-6 md:pl-8">
@@ -420,12 +435,12 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
               queueData.status === "waiting" && !queueData.isSkipped
                 ? "active"
                 : queueData.status === "called" ||
-                  queueData.status === "in_progress" ||
-                  queueData.status === "completed"
-                ? "completed"
-                : "inactive",
-              "รอเข้ารับบริการ",
-              "ขณะนี้ยังไม่ถึงคิวของท่าน กรุณารอใกล้บริเวณห้องตรวจ"
+                    queueData.status === "in_progress" ||
+                    queueData.status === "completed"
+                  ? "completed"
+                  : "inactive",
+              t.status.waiting,
+              t.status.please_wait,
             )}
 
             {renderTimelineItem(
@@ -433,17 +448,17 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
                 queueData.status === "in_progress"
                 ? "active"
                 : queueData.status === "completed"
-                ? "completed"
-                : "inactive",
-              "กำลังดำเนินการบริการ",
-              "ถึงคิวของท่านแล้ว! กรุณาเข้าห้องตรวจ"
+                  ? "completed"
+                  : "inactive",
+              t.status.called,
+              t.patient_status.alert_called_message,
             )}
 
             {renderTimelineItem(
               queueData.status === "completed" ? "active" : "inactive",
-              "ได้รับบริการเรียบร้อยแล้ว",
-              "การบริการเสร็จสิ้น",
-              true
+              t.status.completed,
+              t.status.completed,
+              true,
             )}
           </div>
         </div>
@@ -458,7 +473,9 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
           ) : (
             <VolumeX className="w-3.5 h-3.5 md:w-4 md:h-4" />
           )}
-          {soundEnabled ? "เปิดเสียงแจ้งเตือน" : "ปิดเสียงแจ้งเตือน"}
+          {soundEnabled
+            ? t.patient_status.sound_on
+            : t.patient_status.sound_off}
         </button>
       </main>
 

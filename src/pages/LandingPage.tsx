@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import { useLanguage } from "../components/contexts/LanguageContext";
 
 interface LandingPageProps {
   onPatientClick: () => void;
@@ -11,34 +12,34 @@ export default function LandingPage({
   onPatientClick,
   onStaffClick,
 }: LandingPageProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-[100dvh] w-full flex flex-col bg-white font-sans overflow-hidden">
-      {/* Header จาก Component กลาง */}
       <div className="shrink-0">
         <Header />
       </div>
 
-      {/* Main Content */}
       <main className="flex-1 container mx-auto px-4 py-8 flex flex-col items-center justify-center">
         <div className="text-center mb-8">
-          <h1 className="text-6xl font-bold text-[#0e4b75] mb-2">ระบบคิว</h1>
+          <h1 className="text-6xl font-bold text-[#0e4b75] mb-2">
+            {t.landing.system_name}
+          </h1>
           <p className="text-3xl font-bold text-[#0e4b75] font-medium">
-            โรงพยาบาลนครพิงค์
+            {t.common.hospital_name}
           </p>
         </div>
 
         <div className="w-full max-w-md space-y-6">
-          {/* การ์ดผู้ป่วย */}
           <div
             onClick={onPatientClick}
             className="bg-white rounded-[2rem] p-6 cursor-pointer border-2 border-[#557c3e] hover:shadow-xl transition-all transform hover:-translate-y-1 relative overflow-hidden group"
           >
             <div className="flex flex-col items-center text-center">
               <h2 className="text-3xl font-bold text-[#3e5c2d] mb-4">
-                สำหรับผู้ป่วย
+                {t.landing.for_patient}
               </h2>
 
-              {/* เรียกใช้รูปจาก /public (ตรวจสอบชื่อไฟล์ให้ตรงกับที่คุณวางไว้นะครับ) */}
               <div className="mb-6 mt-2">
                 <img
                   src="/patient.icon.svg"
@@ -48,11 +49,11 @@ export default function LandingPage({
               </div>
 
               <p className="text-gray-500 text-sm mb-6">
-                ตรวจสอบคิวของท่านด้วยเลข VN
+                {t.landing.for_patient_desc}
               </p>
 
               <button className="w-full bg-[#87E74B] text-white py-3 rounded-full font-bold text-lg shadow-md flex justify-center items-center gap-2 group-hover:from-[#71af13] group-hover:to-[#568a0b] transition-all">
-                เข้าสู่ระบบผู้ป่วย
+                {t.landing.patient_btn}
                 <ArrowRight className="w-5 h-5" />
               </button>
             </div>
@@ -65,10 +66,9 @@ export default function LandingPage({
           >
             <div className="flex flex-col items-center text-center">
               <h2 className="text-3xl font-bold text-[#1e4275] mb-4">
-                สำหรับเจ้าหน้าที่
+                {t.landing.for_staff}
               </h2>
 
-              {/* เรียกใช้รูปจาก /public */}
               <div className="mb-6 mt-2">
                 <img
                   src="/staff.icon.svg"
@@ -77,10 +77,12 @@ export default function LandingPage({
                 />
               </div>
 
-              <p className="text-gray-500 text-sm mb-6">จัดการผู้ป่วยในแผนก</p>
+              <p className="text-gray-500 text-sm mb-6">
+                {t.landing.for_staff_desc}
+              </p>
 
               <button className="w-full bg-[#4169e1] text-white py-3 rounded-full font-bold text-lg shadow-md flex justify-center items-center gap-2 group-hover:bg-[#3456b8] transition-all">
-                เข้าสู่ระบบเจ้าหน้าที่
+                {t.landing.staff_btn}
                 <ArrowRight className="w-5 h-5" />
               </button>
             </div>
@@ -88,7 +90,6 @@ export default function LandingPage({
         </div>
       </main>
 
-      {/* Footer จาก Component กลาง */}
       <div className="shrink-0 w-full">
         <Footer />
       </div>
