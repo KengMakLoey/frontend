@@ -368,12 +368,11 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
           {/* Queue Number */}
           <div className="text-center">
             <h1
-              className="leading-[0.9] font-bold tracking-tighter text-[clamp(3rem,18vw,6.5rem)]"
+              className="text-[5.5rem] md:text-[6.5rem] leading-[0.9] font-bold tracking-tighter"
               style={{ color: THEME_DARK_BLUE }}
             >
               {queueData.queueNumber}
             </h1>
-
           </div>
 
           {/* Dynamic Status Card (Always Visible) */}
