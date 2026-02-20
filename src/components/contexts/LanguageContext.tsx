@@ -1,4 +1,9 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  type ReactNode,
+} from "react";
 
 import type { Dictionary } from "../../lang/types";
 
