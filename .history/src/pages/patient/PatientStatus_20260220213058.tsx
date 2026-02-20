@@ -386,6 +386,7 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
             >
               {queueData.queueNumber}
             </h1>
+
           </div>
 
           {/* Dynamic Status Card (Always Visible) */}
@@ -478,7 +479,7 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
         </button>
       </main>
 
-      <div className="shrink-0 w-full z-20">
+      <div className="w-full z-20">
         <Footer />
       </div>
     </div>
