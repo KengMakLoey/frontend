@@ -43,7 +43,9 @@ export default function QueueManagement({
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const [queueToSkip, setQueueToSkip] = useState<StaffQueue | null>(null);
   const [arrivedQueues, setArrivedQueues] = useState<Map<number, Date>>(new Map());
-
+  const [queuePriority, setQueuePriority] = useState<"normal" | "urgent" | "emergency">("normal");
+  const [queuePriorities, setQueuePriorities] = useState<Map<number, "urgent" | "emergency">>(new Map());
+  
   useEffect(() => {
     const called = staffQueues.find(
       (q) => q.status === "called" || q.status === "in_progress"
@@ -162,6 +164,11 @@ export default function QueueManagement({
     setLoading(true);
     try {
       const result = await API.createQueue(inputVN, staffData.staffId);
+      if (queuePriority !== "normal" && result.queueId) {
+        setQueuePriorities(prev => new Map(prev).set(result.queueId!, queuePriority));
+      }
+      setQueuePriority("normal");
+
       alert(`สร้างคิวสำเร็จ: ${result.queueNumber}`);
       setNewQueueVN("");
       setShowCreateQueue(false);
@@ -241,6 +248,24 @@ export default function QueueManagement({
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-teal-500"
                       disabled={loading}
                     />
+                    <div className="flex gap-2 mt-2">
+                    {(["normal", "urgent", "emergency"] as const).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setQueuePriority(p)}
+                        className={`flex-1 py-2 rounded-lg font-bold text-sm border-2 transition-colors ${
+                          queuePriority === p
+                            ? p === "emergency" ? "bg-red-500 text-white border-red-500"
+                            : p === "urgent" ? "bg-orange-400 text-white border-orange-400"
+                            : "bg-gray-200 text-gray-700 border-gray-200"
+                            : "bg-white border-gray-300 text-gray-500"
+                        }`}
+                      >
+                        {p === "normal" ? "ทั่วไป" : p === "urgent" ? "เร่งด่วน" : "ฉุกเฉิน"}
+                      </button>
+                    ))}
+                  </div>
                   </div>
                   <button
                     type="submit"
@@ -298,6 +323,16 @@ export default function QueueManagement({
                             <p className="text-sm text-gray-500">
                               Tel: {queue.phoneNumber}
                             </p>
+                            {queuePriorities.get(queue.queueId) === "emergency" && (
+                              <span className="bg-red-100 text-red-600 border border-red-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                                ฉุกเฉิน
+                              </span>
+                            )}
+                            {queuePriorities.get(queue.queueId) === "urgent" && (
+                              <span className="bg-orange-100 text-orange-600 border border-orange-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                                เร่งด่วน
+                              </span>
+                            )}
                           </div>
 
                           {!currentCalledQueue && (
@@ -492,6 +527,17 @@ export default function QueueManagement({
                             <p className="text-sm text-gray-500">
                               Tel: {queue.phoneNumber}
                             </p>
+
+                            {queuePriorities.get(queue.queueId) === "emergency" && (
+                              <span className="bg-red-100 text-red-600 border border-red-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                                ฉุกเฉิน
+                              </span>
+                            )}
+                            {queuePriorities.get(queue.queueId) === "urgent" && (
+                              <span className="bg-orange-100 text-orange-600 border border-orange-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                                เร่งด่วน
+                              </span>
+                            )}
                             {queue.skippedTime && (
                               <p className="text-xs text-gray-400 mt-1">
                                 ข้ามเมื่อ:{" "}
