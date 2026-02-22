@@ -42,6 +42,7 @@ export default function QueueManagement({
   const [newQueueVN, setNewQueueVN] = useState("");
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const [queueToSkip, setQueueToSkip] = useState<StaffQueue | null>(null);
+  const [arrivedQueues, setArrivedQueues] = useState<Map<number, Date>>(new Map());
 
   useEffect(() => {
     const called = staffQueues.find(
@@ -93,6 +94,13 @@ export default function QueueManagement({
       if (currentCalledQueue?.queueId === queueToSkip.queueId) {
         setCurrentCalledQueue(null);
       }
+
+      // ล้างสถานะมาแล้วออก
+      setArrivedQueues(prev => {
+        const next = new Map(prev);
+        next.delete(queueToSkip.queueId);
+        return next;
+      });
 
       await onRefresh();
     } catch (err) {
@@ -452,7 +460,16 @@ export default function QueueManagement({
                       ไม่มีคิวที่ถูกข้าม
                     </div>
                   ) : (
-                    skippedQueues.map((queue) => (
+                   [...skippedQueues]
+                    .sort((a, b) => {
+                      const aTime = arrivedQueues.get(a.queueId);
+                      const bTime = arrivedQueues.get(b.queueId);
+                      if (aTime && bTime) return aTime.getTime() - bTime.getTime(); // มาก่อนอยู่บน
+                      if (aTime) return -1;
+                      if (bTime) return 1;
+                      return 0;
+                    })
+                    .map((queue) => (
                       <div
                         key={queue.queueId}
                         className="bg-white rounded-3xl px-6 py-4 border-2 border-gray-200 hover:border-red-300 transition-colors shadow-sm"
@@ -487,14 +504,42 @@ export default function QueueManagement({
                             )}
                           </div>
 
-                          <button
+                          {/* <button
                             onClick={() => handleRecallSkipped(queue.queueId)}
                             className="text-white px-8 py-3 rounded-full hover:from-green-500 hover:to-green-600 font-bold flex items-center shadow-md text-lg"
                             style={{ backgroundColor: "#87E74B" }}
                           >
                             <Bell className="w-5 h-5 mr-2" />
                             คิวถัดไป
-                          </button>
+                          </button> */}
+                           <div className="flex flex-row items-center gap-2">
+                            {arrivedQueues.has(queue.queueId) ? (
+                              <>
+                                <span className="flex items-center gap-1 bg-green-100 text-green-700 border border-green-400 px-3 py-1.5 rounded-full font-bold text-sm">
+                                  <CheckSquare className="w-4 h-4" />
+                                  มาแล้ว ✓
+                                </span>
+                                {!currentCalledQueue && (
+                                  <button
+                                    onClick={() => handleCallQueue(queue)}
+                                    className="text-white px-8 py-3 rounded-full font-bold flex items-center shadow-md text-lg"
+                                    style={{ backgroundColor: "#87E74B" }}
+                                  >
+                                    <Bell className="w-5 h-5 mr-2" />
+                                    เรียก
+                                  </button>
+                                )}
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setArrivedQueues(prev => new Map(prev).set(queue.queueId, new Date()))}
+                      className="flex items-center gap-1 bg-white text-green-600 border-2 border-green-400 px-3 py-1.5 rounded-full font-bold text-sm hover:bg-green-50 transition-colors"
+                    >
+                      <CheckSquare className="w-4 h-4" />
+                      มาแล้ว
+                    </button>
+                  )}
+                </div>
                         </div>
                       </div>
                     ))
