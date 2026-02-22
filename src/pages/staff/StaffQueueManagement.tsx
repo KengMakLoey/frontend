@@ -42,7 +42,10 @@ export default function QueueManagement({
   const [newQueueVN, setNewQueueVN] = useState("");
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const [queueToSkip, setQueueToSkip] = useState<StaffQueue | null>(null);
-
+  const [arrivedQueues, setArrivedQueues] = useState<Map<number, Date>>(new Map());
+  const [queuePriority, setQueuePriority] = useState<"normal" | "urgent" | "emergency">("normal");
+  const [queuePriorities, setQueuePriorities] = useState<Map<number, "urgent" | "emergency">>(new Map());
+  
   useEffect(() => {
     const called = staffQueues.find(
       (q) => q.status === "called" || q.status === "in_progress"
@@ -93,6 +96,13 @@ export default function QueueManagement({
       if (currentCalledQueue?.queueId === queueToSkip.queueId) {
         setCurrentCalledQueue(null);
       }
+
+      // ล้างสถานะมาแล้วออก
+      setArrivedQueues(prev => {
+        const next = new Map(prev);
+        next.delete(queueToSkip.queueId);
+        return next;
+      });
 
       await onRefresh();
     } catch (err) {
@@ -154,6 +164,11 @@ export default function QueueManagement({
     setLoading(true);
     try {
       const result = await API.createQueue(inputVN, staffData.staffId);
+      if (queuePriority !== "normal" && result.queueId) {
+        setQueuePriorities(prev => new Map(prev).set(result.queueId!, queuePriority));
+      }
+      setQueuePriority("normal");
+
       alert(`สร้างคิวสำเร็จ: ${result.queueNumber}`);
       setNewQueueVN("");
       setShowCreateQueue(false);
@@ -233,6 +248,24 @@ export default function QueueManagement({
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-teal-500"
                       disabled={loading}
                     />
+                    <div className="flex gap-2 mt-2">
+                    {(["normal", "urgent", "emergency"] as const).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setQueuePriority(p)}
+                        className={`flex-1 py-2 rounded-lg font-bold text-sm border-2 transition-colors ${
+                          queuePriority === p
+                            ? p === "emergency" ? "bg-red-500 text-white border-red-500"
+                            : p === "urgent" ? "bg-orange-400 text-white border-orange-400"
+                            : "bg-gray-200 text-gray-700 border-gray-200"
+                            : "bg-white border-gray-300 text-gray-500"
+                        }`}
+                      >
+                        {p === "normal" ? "ทั่วไป" : p === "urgent" ? "เร่งด่วน" : "ฉุกเฉิน"}
+                      </button>
+                    ))}
+                  </div>
                   </div>
                   <button
                     type="submit"
@@ -290,6 +323,16 @@ export default function QueueManagement({
                             <p className="text-sm text-gray-500">
                               Tel: {queue.phoneNumber}
                             </p>
+                            {queuePriorities.get(queue.queueId) === "emergency" && (
+                              <span className="bg-red-100 text-red-600 border border-red-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                                ฉุกเฉิน
+                              </span>
+                            )}
+                            {queuePriorities.get(queue.queueId) === "urgent" && (
+                              <span className="bg-orange-100 text-orange-600 border border-orange-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                                เร่งด่วน
+                              </span>
+                            )}
                           </div>
 
                           {!currentCalledQueue && (
@@ -452,7 +495,16 @@ export default function QueueManagement({
                       ไม่มีคิวที่ถูกข้าม
                     </div>
                   ) : (
-                    skippedQueues.map((queue) => (
+                   [...skippedQueues]
+                    .sort((a, b) => {
+                      const aTime = arrivedQueues.get(a.queueId);
+                      const bTime = arrivedQueues.get(b.queueId);
+                      if (aTime && bTime) return aTime.getTime() - bTime.getTime(); // มาก่อนอยู่บน
+                      if (aTime) return -1;
+                      if (bTime) return 1;
+                      return 0;
+                    })
+                    .map((queue) => (
                       <div
                         key={queue.queueId}
                         className="bg-white rounded-3xl px-6 py-4 border-2 border-gray-200 hover:border-red-300 transition-colors shadow-sm"
@@ -475,6 +527,17 @@ export default function QueueManagement({
                             <p className="text-sm text-gray-500">
                               Tel: {queue.phoneNumber}
                             </p>
+
+                            {queuePriorities.get(queue.queueId) === "emergency" && (
+                              <span className="bg-red-100 text-red-600 border border-red-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                                ฉุกเฉิน
+                              </span>
+                            )}
+                            {queuePriorities.get(queue.queueId) === "urgent" && (
+                              <span className="bg-orange-100 text-orange-600 border border-orange-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                                เร่งด่วน
+                              </span>
+                            )}
                             {queue.skippedTime && (
                               <p className="text-xs text-gray-400 mt-1">
                                 ข้ามเมื่อ:{" "}
@@ -487,14 +550,42 @@ export default function QueueManagement({
                             )}
                           </div>
 
-                          <button
+                          {/* <button
                             onClick={() => handleRecallSkipped(queue.queueId)}
                             className="text-white px-8 py-3 rounded-full hover:from-green-500 hover:to-green-600 font-bold flex items-center shadow-md text-lg"
                             style={{ backgroundColor: "#87E74B" }}
                           >
                             <Bell className="w-5 h-5 mr-2" />
                             คิวถัดไป
-                          </button>
+                          </button> */}
+                           <div className="flex flex-row items-center gap-2">
+                            {arrivedQueues.has(queue.queueId) ? (
+                              <>
+                                <span className="flex items-center gap-1 bg-green-100 text-green-700 border border-green-400 px-3 py-1.5 rounded-full font-bold text-sm">
+                                  <CheckSquare className="w-4 h-4" />
+                                  มาแล้ว ✓
+                                </span>
+                                {!currentCalledQueue && (
+                                  <button
+                                    onClick={() => handleCallQueue(queue)}
+                                    className="text-white px-8 py-3 rounded-full font-bold flex items-center shadow-md text-lg"
+                                    style={{ backgroundColor: "#87E74B" }}
+                                  >
+                                    <Bell className="w-5 h-5 mr-2" />
+                                    เรียก
+                                  </button>
+                                )}
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setArrivedQueues(prev => new Map(prev).set(queue.queueId, new Date()))}
+                      className="flex items-center gap-1 bg-white text-green-600 border-2 border-green-400 px-3 py-1.5 rounded-full font-bold text-sm hover:bg-green-50 transition-colors"
+                    >
+                      <CheckSquare className="w-4 h-4" />
+                      มาแล้ว
+                    </button>
+                  )}
+                </div>
                         </div>
                       </div>
                     ))
