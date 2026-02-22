@@ -7,9 +7,11 @@ import {
   X,
   PlusCircle,
   Hourglass,
+  CheckCircle,
 } from "lucide-react";
 import type { StaffData, StaffQueue } from "../../components/shared/types";
 import { API } from "../../components/shared/api";
+import { printQueueSlip } from "../../components/utils/printQueueSlip";
 
 interface QueueManagementProps {
   staffData: StaffData | null;
@@ -45,7 +47,8 @@ export default function QueueManagement({
   const [arrivedQueues, setArrivedQueues] = useState<Map<number, Date>>(new Map());
   const [queuePriority, setQueuePriority] = useState<"normal" | "urgent" | "emergency">("normal");
   const [queuePriorities, setQueuePriorities] = useState<Map<number, "urgent" | "emergency">>(new Map());
-  
+  const [successQueue, setSuccessQueue] = useState<{ queueNumber: string; patientName: string; vn: string } | null>(null);
+
   useEffect(() => {
     const called = staffQueues.find(
       (q) => q.status === "called" || q.status === "in_progress"
@@ -169,7 +172,11 @@ export default function QueueManagement({
       }
       setQueuePriority("normal");
 
-      alert(`สร้างคิวสำเร็จ: ${result.queueNumber}`);
+      setSuccessQueue({
+        queueNumber: result.queueNumber ?? "",
+        patientName: (result as any).patientName ?? "",
+        vn: inputVN,
+      });
       setNewQueueVN("");
       setShowCreateQueue(false);
       await onRefresh();
@@ -645,6 +652,78 @@ export default function QueueManagement({
                               setShowSkipConfirm(false);
                               setQueueToSkip(null);
                             }}
+                            className="px-6 py-3 bg-transparent border-2 border-gray-400 text-gray-500 rounded-xl hover:bg-gray-50 font-bold text-base"
+                          >
+                            ยกเลิก
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Success Queue Modal */}
+                  {successQueue && (
+                    <div
+                      className="fixed inset-0 flex items-center justify-center z-50"
+                      style={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
+                      onClick={() => setSuccessQueue(null)}
+                    >
+                      <div
+                        className="bg-white rounded-3xl p-8 mx-4 shadow-2xl text-center relative"
+                        style={{ width: "380px", maxWidth: "90vw" }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {/* ปุ่ม X */}
+                        <button
+                          onClick={() => setSuccessQueue(null)}
+                          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+
+                        <h3 className="font-bold mb-6" style={{ color: "#044C72", fontFamily: "Inter", fontSize: "24px", fontWeight: 700, lineHeight: "100%" }}>
+                          เพิ่มคิวสำเร็จ
+                        </h3>
+
+                        {/* วงกลมติ๊กถูก */}
+                        <div className="flex items-center justify-center mb-4">
+                          <div
+                            className="w-24 h-24 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: "#4CAF50" }}
+                          >
+                            <CheckCircle className="w-14 h-14 text-white" />
+                          </div>
+                        </div>
+
+                        {/* เลขคิว */}
+                        <p className="text-5xl font-bold mb-2" style={{ color: "#044C72" }}>
+                          {successQueue.queueNumber}
+                        </p>
+
+                        {/* ชื่อ + VN */}
+                        {successQueue.patientName && (
+                          <p style={{ color: "#044C72", fontFamily: "Inter", fontSize: "22px", fontWeight: 400, lineHeight: "100%", textTransform: "capitalize" }}>
+                            {successQueue.patientName}
+                          </p>
+                        )}
+                        <p className="mb-8" style={{ color: "#044C72", fontFamily: "Inter", fontSize: "14px", fontWeight: 400, lineHeight: "100%", textTransform: "capitalize", marginTop: successQueue.patientName ? "4px" : "16px" }}>
+                          VN{successQueue.vn.split("-").pop()}
+                        </p>
+
+                        {/* ปุ่ม */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            onClick={() => printQueueSlip({
+                              ...successQueue,
+                              departmentName: staffData?.departmentName,
+                            })}
+                            className="px-6 py-3 text-white rounded-xl font-bold text-base shadow-lg hover:opacity-90"
+                            style={{ backgroundColor: "#939393" }}
+                          >
+                            ปริ้นบัตรคิว
+                          </button>
+                          <button
+                            onClick={() => setSuccessQueue(null)}
                             className="px-6 py-3 bg-transparent border-2 border-gray-400 text-gray-500 rounded-xl hover:bg-gray-50 font-bold text-base"
                           >
                             ยกเลิก
