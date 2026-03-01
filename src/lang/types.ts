@@ -54,4 +54,17 @@ export interface Dictionary {
     notice_desc: string;
     contact_staff: string;
   };
+  directions: {
+    URO: string;
+    PED: string;
+    OBG: string;
+    NCD: string;
+    SPM: string;
+    DIA: string;
+    MED: string;
+    EYE: string;
+    DEN: string;
+    ENT: string;
+    SPC: string;
+  };
 }

@@ -56,4 +56,17 @@ export const en: Dictionary = {
     notice_desc: "You can scan the QR code again to view your queue.",
     contact_staff: "If you have any questions, please contact staff.",
   },
+  directions: {
+    URO: "Take elevator in Building 3 to Floor 1 → Turn left → Walk 10 meters",
+    PED: "Take elevator in Building 3 to Floor 2 → Turn right → Walk 15 meters",
+    OBG: "Take elevator in Building 3 to Floor 2 → Room G210 is on your left",
+    NCD: "Take elevator in Building 3 to Floor 3 → Room M370 is on your right",
+    SPM: "Take elevator in Building 3 to Floor 3 → Room M360 is on your left",
+    DIA: "Take elevator in Building 3 to Floor 3 → Turn left → Walk 20 meters",
+    MED: "Take elevator in Building 3 to Floor 3 → Room M380 is straight ahead",
+    EYE: "Take elevator in Building 3 to Floor 4 → Room E400 is on your right",
+    DEN: "Take elevator in Building 3 to Floor 4 → Turn right → Walk 10 meters",
+    ENT: "Take elevator in Building 3 to Floor 4 → Room N450 is on your left",
+    SPC: "Take elevator in Building 3 to Floor 4 → Turn left → Walk 15 meters",
+  },
 };

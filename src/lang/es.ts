@@ -56,4 +56,17 @@ export const es: Dictionary = {
     notice_desc: "Puede escanear el código QR nuevamente para ver su cola.",
     contact_staff: "Si tiene preguntas, por favor contacte al personal.",
   },
+  directions: {
+    URO: "Tome el elevador del Edificio 3 al Piso 1 → Gire a la izquierda → Camine 10 metros",
+    PED: "Tome el elevador del Edificio 3 al Piso 2 → Gire a la derecha → Camine 15 metros",
+    OBG: "Tome el elevador del Edificio 3 al Piso 2 → La sala G210 está a su izquierda",
+    NCD: "Tome el elevador del Edificio 3 al Piso 3 → La sala M370 está a su derecha",
+    SPM: "Tome el elevador del Edificio 3 al Piso 3 → La sala M360 está a su izquierda",
+    DIA: "Tome el elevador del Edificio 3 al Piso 3 → Gire a la izquierda → Camine 20 metros",
+    MED: "Tome el elevador del Edificio 3 al Piso 3 → La sala M380 está al frente",
+    EYE: "Tome el elevador del Edificio 3 al Piso 4 → La sala E400 está a su derecha",
+    DEN: "Tome el elevador del Edificio 3 al Piso 4 → Gire a la derecha → Camine 10 metros",
+    ENT: "Tome el elevador del Edificio 3 al Piso 4 → La sala N450 está a su izquierda",
+    SPC: "Tome el elevador del Edificio 3 al Piso 4 → Gire a la izquierda → Camine 15 metros",
+  },
 };
