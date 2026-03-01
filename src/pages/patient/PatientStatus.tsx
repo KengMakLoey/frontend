@@ -451,7 +451,7 @@ export default function PatientStatus({ initialData, onBack }: PatientStatusProp
         <button
           onClick={() => setShowRoomModal(true)}
           style={{
-            backgroundColor: "#87E74B",
+            backgroundColor: "#4471D2",
             color: "white",
             border: "none",
             borderRadius: "999px",
@@ -575,29 +575,33 @@ export default function PatientStatus({ initialData, onBack }: PatientStatusProp
           )}
         </div>
 
-          <ol className="text-sm text-gray-700 space-y-2 mb-6">
+       <div className="flex justify-center">
+        <ol className="text-base space-y-3 mb-6 inline-block">
           {(t.directions[queueData.departmentCode as keyof typeof t.directions] ?? "")
             .split("→")
             .map((step, i) => (
               <li key={i} className="flex gap-2">
                 <span className="font-bold text-[#044C72] shrink-0">{i + 1}.</span>
-                <span>{step.trim()}</span>
+                <span style={{ color: "#044C72" }}>{step.trim()}</span>
               </li>
             ))}
         </ol>
+      </div>
 
           {/* ปุ่มปิด */}
+          <div className="flex justify-center">
           <button
-              onClick={() => setShowRoomModal(false)}
-              className="w-full py-3 rounded-full font-bold text-white text-base"
-              style={{ backgroundColor: "#3CAEA3" }}
-            >
-              {t.patient_status.room_modal_close}
+            onClick={() => setShowRoomModal(false)}
+            className="py-2 px-10 rounded-full text-white text-lg"
+            style={{ backgroundColor: "#939393" }}
+          >
+            {t.patient_status.room_modal_close}
           </button>
+        </div>
 
-            <p className="text-center text-xs text-gray-400 mt-3">
-              {t.patient_status.room_modal_not_found}
-            </p>
+          <p className="text-center text-xs text-gray-400 mt-3">
+            {t.patient_status.room_modal_not_found}
+          </p>
         </div>
       </div>
     )}
