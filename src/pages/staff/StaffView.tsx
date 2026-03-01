@@ -28,11 +28,24 @@ type StaffViewType = "dashboard" | "queue" | "account" | "display";
 export default function StaffView({ onBack }: StaffViewProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isStaffLoggedIn, setIsStaffLoggedIn] = useState(false);
-  const [staffData, setStaffData] = useState<StaffData | null>(null);
+  const [isStaffLoggedIn, setIsStaffLoggedIn] = useState(() => {
+    return localStorage.getItem("staff_token") === "true";
+  });
+  const [staffData, setStaffData] = useState<StaffData | null>(() => {
+    const saved = localStorage.getItem("staff_data");
+    return saved ? JSON.parse(saved) : null;
+  });
   const [staffQueues, setStaffQueues] = useState<StaffQueue[]>([]);
+  const [currentView, setCurrentView] = useState<StaffViewType>(() => {
+    const saved = localStorage.getItem("staff_view");
+    return (saved as StaffViewType) || "dashboard";
+  });
 
-  const [currentView, setCurrentView] = useState<StaffViewType>("dashboard");
+  const handleNavigate = (view: StaffViewType) => {
+    localStorage.setItem("staff_view", view);
+    setCurrentView(view);
+  };
+
 
   useEffect(() => {
     let isMounted = true;
@@ -75,6 +88,8 @@ export default function StaffView({ onBack }: StaffViewProps) {
       if (result) {
         setIsStaffLoggedIn(true);
         setStaffData(result);
+        localStorage.setItem("staff_token", "true");        // ← เพิ่ม
+        localStorage.setItem("staff_data", JSON.stringify(result)); // ← เพิ่ม
       } else {
         setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
       }
@@ -96,6 +111,9 @@ export default function StaffView({ onBack }: StaffViewProps) {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("staff_token");
+    localStorage.removeItem("staff_data");
+    localStorage.removeItem("staff_view");
     setIsStaffLoggedIn(false);
     setStaffData(null);
     onBack();
@@ -116,7 +134,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
   const renderContent = () => {
     // 3. เพิ่ม case สำหรับ display
     if (currentView === "display") {
-      return <StaffDisplay onBack={() => setCurrentView("dashboard")} />;
+      return <StaffDisplay onBack={() => handleNavigate("dashboard")} />;
     }
 
     if (currentView === "queue") {
@@ -124,7 +142,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
         <QueueManagement
           staffData={staffData}
           staffQueues={staffQueues}
-          onBack={() => setCurrentView("dashboard")}
+          onBack={() => handleNavigate("dashboard")}
           onRefresh={loadStaffQueues}
         />
       );
@@ -291,7 +309,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
                       </span>
                     </p>
                     <button
-                      onClick={() => setCurrentView("queue")}
+                      onClick={() => handleNavigate("queue")}
                       className="w-full bg-gradient-to-r from-green-400 to-green-500 text-white px-6 py-3 rounded-xl hover:from-green-500 hover:to-green-600 font-bold mt-4 flex items-center justify-center"
                     >
                       <ClipboardList className="w-5 h-5 mr-2" />
@@ -303,7 +321,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
                     <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                     <p className="text-gray-500 mb-4">ไม่มีคิวปัจจุบัน</p>
                     <button
-                      onClick={() => setCurrentView("queue")}
+                      onClick={() => handleNavigate("queue")}
                       className="w-full bg-gradient-to-r from-green-400 to-green-500 text-white px-6 py-3 rounded-xl hover:from-green-500 hover:to-green-600 font-bold flex items-center justify-center"
                     >
                       <ClipboardList className="w-5 h-5 mr-2" />
@@ -488,7 +506,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
       {currentView !== "display" && (
         <StaffHeader
           currentView={currentView}
-          onNavigate={setCurrentView}
+          onNavigate={handleNavigate} 
           staffName={staffData?.staffName}
         />
       )}
