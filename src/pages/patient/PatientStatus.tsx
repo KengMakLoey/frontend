@@ -391,7 +391,7 @@ export default function PatientStatus({ initialData, onBack }: PatientStatusProp
               gap: "4px",
             }}
           >
-            ← กลับหน้าหลัก
+            ← {t.common.back}
           </button>
         </div>
 

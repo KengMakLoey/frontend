@@ -133,7 +133,7 @@ const PatientVN = ({ onSuccess, onBack }: PatientVNProps) => {
           gap: "4px",
         }}
       >
-        ← กลับหน้าหลัก
+        ← {t.common.back}
       </button>
     </div>
     
