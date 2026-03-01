@@ -451,7 +451,7 @@ export default function PatientStatus({ initialData, onBack }: PatientStatusProp
         <button
           onClick={() => setShowRoomModal(true)}
           style={{
-            backgroundColor: "#87E74B",
+            backgroundColor: "#4471D2",
             color: "white",
             border: "none",
             borderRadius: "999px",
@@ -587,17 +587,19 @@ export default function PatientStatus({ initialData, onBack }: PatientStatusProp
         </ol>
 
           {/* ปุ่มปิด */}
+          <div className="flex justify-center">
           <button
-              onClick={() => setShowRoomModal(false)}
-              className="w-full py-3 rounded-full font-bold text-white text-base"
-              style={{ backgroundColor: "#3CAEA3" }}
-            >
-              {t.patient_status.room_modal_close}
+            onClick={() => setShowRoomModal(false)}
+            className="py-2 px-10 rounded-full text-white text-lg"
+            style={{ backgroundColor: "#939393" }}
+          >
+            {t.patient_status.room_modal_close}
           </button>
+        </div>
 
-            <p className="text-center text-xs text-gray-400 mt-3">
-              {t.patient_status.room_modal_not_found}
-            </p>
+          <p className="text-center text-xs text-gray-400 mt-3">
+            {t.patient_status.room_modal_not_found}
+          </p>
         </div>
       </div>
     )}
