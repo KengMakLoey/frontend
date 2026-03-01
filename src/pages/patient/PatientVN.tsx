@@ -40,7 +40,7 @@ interface PatientVNProps {
   onSuccess: (data: QueueData) => void;
 }
 
-const PatientVN = ({ onSuccess }: PatientVNProps) => {
+const PatientVN = ({ onSuccess, onBack }: PatientVNProps) => {
   const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -111,7 +111,32 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
       <div className="shrink-0">
         <Header />
       </div>
-
+    {/* ฺBack Button */}
+    <div style={{
+      position: "sticky",
+      top: 0,
+      zIndex: 40,
+      backgroundColor: "white",
+      padding: "8px 16px",
+    }}>
+      <button
+        onClick={onBack}
+        style={{
+          backgroundColor: "transparent",
+          color: "#044C72",
+          border: "none",
+          fontWeight: "bold",
+          fontSize: "16px",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "4px",
+        }}
+      >
+        ← กลับหน้าหลัก
+      </button>
+    </div>
+    
       <main className="flex-1 flex flex-col items-center justify-center px-4 w-full pb-4">
         <div className="w-full max-w-[320px] sm:max-w-md space-y-4 sm:space-y-6">
           <div className="text-center space-y-1">

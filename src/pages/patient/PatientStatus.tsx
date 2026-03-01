@@ -22,7 +22,7 @@ interface NotificationOverlayState {
   message: string;
 }
 
-export default function PatientStatus({ initialData }: PatientStatusProps) {
+export default function PatientStatus({ initialData, onBack }: PatientStatusProps) {
   const { t, currentLanguage } = useLanguage();
   const [queueData, setQueueData] = useState<QueueData>(initialData);
   const [currentTime, setCurrentTime] = useState("");
@@ -366,6 +366,32 @@ export default function PatientStatus({ initialData }: PatientStatusProps) {
       <div className="shrink-0">
         <Header />
       </div>
+
+       {/* ฺBack Button */}
+        <div style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 40,
+          backgroundColor: "white",
+          padding: "8px 16px",
+        }}>
+          <button
+            onClick={onBack}
+            style={{
+              backgroundColor: "transparent",
+              color: "#044C72",
+              border: "none",
+              fontWeight: "bold",
+              fontSize: "16px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
+            ← กลับหน้าหลัก
+          </button>
+        </div>
 
       <main className="flex-1 flex flex-col items-center px-4 py-4 pb-6 w-full overflow-y-auto">
         {/* Top Section */}
