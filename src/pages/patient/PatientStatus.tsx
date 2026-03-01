@@ -575,16 +575,18 @@ export default function PatientStatus({ initialData, onBack }: PatientStatusProp
           )}
         </div>
 
-          <ol className="text-sm text-gray-700 space-y-2 mb-6">
+       <div className="flex justify-center">
+        <ol className="text-base space-y-3 mb-6 inline-block">
           {(t.directions[queueData.departmentCode as keyof typeof t.directions] ?? "")
             .split("→")
             .map((step, i) => (
               <li key={i} className="flex gap-2">
                 <span className="font-bold text-[#044C72] shrink-0">{i + 1}.</span>
-                <span>{step.trim()}</span>
+                <span style={{ color: "#044C72" }}>{step.trim()}</span>
               </li>
             ))}
         </ol>
+      </div>
 
           {/* ปุ่มปิด */}
           <div className="flex justify-center">
