@@ -48,10 +48,26 @@ export interface Dictionary {
     alert_skipped_message: string;
     alert_near_title: string;
     alert_near_message: string;
+    room_btn: string;
+    room_modal_close: string;
+    room_modal_not_found: string;
   };
   footer: {
     notice_title: string;
     notice_desc: string;
     contact_staff: string;
+  };
+  directions: {
+    URO: string;
+    PED: string;
+    OBG: string;
+    NCD: string;
+    SPM: string;
+    DIA: string;
+    MED: string;
+    EYE: string;
+    DEN: string;
+    ENT: string;
+    SPC: string;
   };
 }

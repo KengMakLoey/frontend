@@ -27,6 +27,8 @@ export default function PatientStatus({ initialData, onBack }: PatientStatusProp
   const [queueData, setQueueData] = useState<QueueData>(initialData);
   const [currentTime, setCurrentTime] = useState("");
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [showRoomModal, setShowRoomModal] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const [overlay, setOverlay] = useState<NotificationOverlayState>({
     visible: false,
@@ -438,13 +440,36 @@ export default function PatientStatus({ initialData, onBack }: PatientStatusProp
             </div>
           </div>
 
-          <p className="text-gray-400 text-xs md:text-sm font-medium mt-1">
+          <p className="text-gray-400 text-xs md:text-sm font-medium">
             VN{queueData.vn.split("-").pop()}
           </p>
-          <p className="text-gray-400 text-xs md:text-sm font-medium mt-1">
+          <p className="text-gray-400 text-xs md:text-sm font-medium">
             {t.patient_status.last_update.replace("{time}", currentTime)}
           </p>
         </div>
+
+        <button
+          onClick={() => setShowRoomModal(true)}
+          style={{
+            backgroundColor: "#87E74B",
+            color: "white",
+            border: "none",
+            borderRadius: "999px",
+            padding: "10px 24px",
+            fontWeight: "bold",
+            fontSize: "14px",
+            cursor: "pointer",
+            boxShadow: "0 4px 12px rgba(135,231,75,0.3)",
+            marginTop: "10px",
+            marginBottom: "10px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          {t.patient_status.room_btn}
+          <span style={{ fontSize: "16px" }}>→</span>
+        </button>
 
         {/* Timeline Status Card */}
         <div className="w-full bg-white rounded-[1.5rem] shadow-sm border border-gray-200 mt-2 mb-1">
@@ -507,6 +532,75 @@ export default function PatientStatus({ initialData, onBack }: PatientStatusProp
       <div className="shrink-0 w-full z-20">
         <Footer />
       </div>
+
+      {showRoomModal && (
+      <div
+        className="fixed inset-0 flex items-center justify-center z-50"
+        style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+        onClick={() => setShowRoomModal(false)}
+      >
+        <div
+          className="bg-white rounded-3xl p-8 mx-4 shadow-2xl w-full max-w-sm relative"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* ปุ่มปิด */}
+          <button
+            onClick={() => setShowRoomModal(false)}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          {/* ชื่อห้อง */}
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-[#044C72]">
+              {queueData.departmentLocation || t.status.room}
+            </h2>
+
+          </div>
+
+          {/* รูปภาพ */}
+          <div className="w-full rounded-2xl mb-6 overflow-hidden" style={{ height: "160px" }}>
+          {queueData.roomImage && !imageError ? (
+            <img
+              src={`/${queueData.roomImage}`}
+              alt={queueData.department}
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <p className="text-sm text-gray-400">( ภาพประกอบ )</p>
+            </div>
+          )}
+        </div>
+
+          <ol className="text-sm text-gray-700 space-y-2 mb-6">
+          {(t.directions[queueData.departmentCode as keyof typeof t.directions] ?? "")
+            .split("→")
+            .map((step, i) => (
+              <li key={i} className="flex gap-2">
+                <span className="font-bold text-[#044C72] shrink-0">{i + 1}.</span>
+                <span>{step.trim()}</span>
+              </li>
+            ))}
+        </ol>
+
+          {/* ปุ่มปิด */}
+          <button
+              onClick={() => setShowRoomModal(false)}
+              className="w-full py-3 rounded-full font-bold text-white text-base"
+              style={{ backgroundColor: "#3CAEA3" }}
+            >
+              {t.patient_status.room_modal_close}
+          </button>
+
+            <p className="text-center text-xs text-gray-400 mt-3">
+              {t.patient_status.room_modal_not_found}
+            </p>
+        </div>
+      </div>
+    )}
     </div>
   );
 }

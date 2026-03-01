@@ -12,6 +12,9 @@ export interface QueueData {
   issuedTime: string;
   priorityScore: number;
   isSkipped: boolean;
+  roomImage?: string; 
+  directions?: string;
+  departmentCode?: string;
 }
 
 export interface StaffData {
