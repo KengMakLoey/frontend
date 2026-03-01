@@ -50,6 +50,9 @@ export const la: Dictionary = {
     alert_skipped_message: "ກະລຸນາຕິດຕໍ່ເຈົ້າໜ້າທີ່",
     alert_near_title: "ໃກ້ເຖິງຄິວແລ້ວ",
     alert_near_message: "ຍັງເຫຼືອອີກ {count} ຄິວ ກະລຸນາກຽມຕົວ",
+    room_btn: "ເບິ່ງຫ້ອງກວດ",
+    room_modal_close: "ປິດ",
+    room_modal_not_found: "ຫາກບໍ່ພົບ ກະລຸນາຕິດຕໍ່ເຄົ້າເຕີ້ປະຊາສຳພັນ",
   },
   footer: {
     notice_title: "ຫາກທ່ານອອກຈາກໜ້ານີ້",

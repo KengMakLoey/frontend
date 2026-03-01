@@ -50,6 +50,9 @@ export const en: Dictionary = {
     alert_skipped_message: "Please contact staff.",
     alert_near_title: "Almost Your Turn",
     alert_near_message: "{count} queues remaining. Please get ready.",
+    room_btn: "View Room Direction",
+    room_modal_close: "Close",
+  room_modal_not_found: "If not found, please contact the information counter.",
   },
   footer: {
     notice_title: "If you have exited this page",

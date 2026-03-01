@@ -14,6 +14,7 @@ export interface QueueData {
   isSkipped: boolean;
   roomImage?: string; 
   directions?: string;
+  departmentCode?: string;
 }
 
 export interface StaffData {

@@ -50,6 +50,9 @@ export const kr: Dictionary = {
     alert_skipped_message: "직원에게 문의해주세요.",
     alert_near_title: "곧 순서가 됩니다",
     alert_near_message: "{count}명 남았습니다. 준비해주세요.",
+    room_btn: "진료실 보기",
+    room_modal_close: "닫기",
+    room_modal_not_found: "찾을 수 없는 경우 안내 데스크에 문의하세요.",
   },
   footer: {
     notice_title: "이 페이지를 닫은 경우",

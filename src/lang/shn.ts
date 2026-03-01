@@ -50,6 +50,9 @@ export const shn: Dictionary = {
     alert_skipped_message: "ၶႅၼ်းတေႃႈၵပ်းသိုပ်ႇၸဝ်ႈၼႃႈတီႈ", // ติดต่อเจ้าหน้าที่
     alert_near_title: "ၸမ်ထိုင်ၶိဝ်းယဝ်ႉ", // ใกล้ถึงคิว
     alert_near_message: "ၵိုတ်းလိူဝ်ထႅင်ႈ {count} ၶိဝ်း ၶႅၼ်းတေႃႈၵၢင်ႈတူဝ်", // เหลืออีก ... คิว เตรียมตัว
+    room_btn: "တူၺ်းႁွင်ႈ",
+    room_modal_close: "ပိၵ်ႉ",
+    room_modal_not_found: "ပေႃးဢမ်ႇႁၼ် ၶႅၼ်းတေႃႈၵပ်းသိုပ်ႇ counter ၵပ်းသိုပ်ႇၸဝ်ႈၼႃႈတီႈ",
   },
   footer: {
     notice_title: "ပေႃးဝႃႈၸဝ်ႈၵဝ်ႇဢွၵ်ႇၼႃႈၼႆႉ",

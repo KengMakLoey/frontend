@@ -50,6 +50,9 @@ export const km: Dictionary = {
     alert_skipped_message: "សូមទាក់ទងបុគ្គលិក",
     alert_near_title: "ជិតដល់លេខរៀងហើយ",
     alert_near_message: "នៅសល់ {count} នាក់ទៀត សូមត្រៀមខ្លួន",
+    room_btn: "មើលបន្ទប់",
+    room_modal_close: "បិទ",
+    room_modal_not_found: "ប្រសិនបើរកមិនឃើញ សូមទាក់ទងបុគ្គលិកព័ត៌មាន",
   },
   footer: {
     notice_title: "ប្រសិនបើអ្នកចាកចេញពីទំព័រនេះ",

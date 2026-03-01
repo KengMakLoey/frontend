@@ -48,6 +48,9 @@ export interface Dictionary {
     alert_skipped_message: string;
     alert_near_title: string;
     alert_near_message: string;
+    room_btn: string;
+    room_modal_close: string;
+    room_modal_not_found: string;
   };
   footer: {
     notice_title: string;

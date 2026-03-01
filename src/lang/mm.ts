@@ -50,6 +50,9 @@ export const mm: Dictionary = {
     alert_skipped_message: "ဝန်ထမ်းနှင့်ဆက်သွယ်ပါ။",
     alert_near_title: "အလှည့်နီးကပ်နေပြီ",
     alert_near_message: "နောက်ထပ် {count} ယောက်လိုပါသည်၊ ပြင်ဆင်ထားပါ။",
+    room_btn: "ခန်းကြည့်ရန်",
+    room_modal_close: "ပိတ်မည်",
+    room_modal_not_found: "မတွေ့ပါက သတင်းပြန်ကြားရေးကောင်တာသို့ ဆက်သွယ်ပါ။",
   },
   footer: {
     notice_title: "ဤစာမျက်နှာမှ ထွက်သွားပါက",

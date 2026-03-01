@@ -50,6 +50,9 @@ export const jp: Dictionary = {
     alert_skipped_message: "スタッフにお問い合わせください。",
     alert_near_title: "まもなく順番です",
     alert_near_message: "あと {count} 人待ちです。ご準備ください。",
+    room_btn: "診察室を確認",
+     room_modal_close: "閉じる",
+    room_modal_not_found: "見つからない場合は、総合案内カウンターへお問い合わせください。",
   },
   footer: {
     notice_title: "このページを閉じた場合",

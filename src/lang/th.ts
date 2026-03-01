@@ -50,6 +50,9 @@ export const th: Dictionary = {
     alert_skipped_message: "กรุณาติดต่อเจ้าหน้าที่",
     alert_near_title: "ใกล้ถึงคิว",
     alert_near_message: "เหลืออีก {count} คิว กรุณาเตรียมตัว",
+    room_btn: "ดูห้องที่ต้องไป",
+    room_modal_close: "ปิด",
+  room_modal_not_found: "หากไม่พบ กรุณาติดต่อเคาน์เตอร์ประชาสัมพันธ์",
   },
   footer: {
     notice_title: "หากท่านได้ทำการออกหน้านี้",

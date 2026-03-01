@@ -50,6 +50,9 @@ export const cn: Dictionary = {
     alert_skipped_message: "请联系工作人员。",
     alert_near_title: "即将轮到您",
     alert_near_message: "前方还有 {count} 位，请做好准备。",
+    room_btn: "查看诊室位置",
+    room_modal_close: "关闭",
+    room_modal_not_found: "如未找到，请联系咨询台工作人员。",
   },
   footer: {
     notice_title: "如果您已退出此页面",
