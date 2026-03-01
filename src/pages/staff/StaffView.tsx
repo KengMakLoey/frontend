@@ -40,10 +40,21 @@ export default function StaffView({ onBack }: StaffViewProps) {
     const saved = localStorage.getItem("staff_view");
     return (saved as StaffViewType) || "dashboard";
   });
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleNavigate = (view: StaffViewType) => {
     localStorage.setItem("staff_view", view);
     setCurrentView(view);
+  };
+
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      await loadStaffQueues();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
 
@@ -334,11 +345,15 @@ export default function StaffView({ onBack }: StaffViewProps) {
 
             <div className="space-y-3">
               <button
-                onClick={loadStaffQueues}
-                className="w-full bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 font-semibold"
-              >
-                รีเฟรชข้อมูล
-              </button>
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 font-semibold disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+            >
+              <span className={`text-lg ${isRefreshing ? "animate-spin inline-block" : ""}`}>
+                ↻
+              </span>
+              {isRefreshing ? "กำลังโหลด..." : "รีเฟรชข้อมูล"}
+            </button>
             </div>
           </div>
 

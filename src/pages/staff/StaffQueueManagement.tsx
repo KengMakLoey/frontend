@@ -48,6 +48,17 @@ export default function QueueManagement({
   const [queuePriority, setQueuePriority] = useState<"normal" | "urgent" | "emergency">("normal");
   const [queuePriorities, setQueuePriorities] = useState<Map<number, "urgent" | "emergency">>(new Map());
   const [successQueue, setSuccessQueue] = useState<{ queueNumber: string; patientName: string; vn: string } | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      await onRefresh();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     const called = staffQueues.find(
@@ -217,10 +228,14 @@ export default function QueueManagement({
           </div>
 
           <button
-            onClick={onRefresh}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-semibold shadow"
+            onClick={handleRefresh}             
+            disabled={isRefreshing}             
+            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-semibold shadow disabled:opacity-60 disabled:cursor-not-allowed transition-all"
           >
-            รีเฟรช
+            <span className={`text-lg ${isRefreshing ? "animate-spin inline-block" : ""}`}>
+              ↻
+            </span>
+            {isRefreshing ? "กำลังโหลด..." : "รีเฟรช"}
           </button>
         </div>
 
