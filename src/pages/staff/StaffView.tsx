@@ -98,8 +98,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
       const result = await API.staffLogin(username, password);
       if (result) {
         setIsStaffLoggedIn(true);
-        setStaffData(result);
-        localStorage.setItem("staff_token", "true");        // ← เพิ่ม
+        setStaffData(result);       
         localStorage.setItem("staff_data", JSON.stringify(result)); // ← เพิ่ม
       } else {
         setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
