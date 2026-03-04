@@ -1,4 +1,4 @@
-import type { Dictionary } from "./types";
+import type { Dictionary } from "./lang_types";
 
 export const jp: Dictionary = {
   common: {
@@ -51,13 +51,19 @@ export const jp: Dictionary = {
     alert_near_title: "まもなく順番です",
     alert_near_message: "あと {count} 人待ちです。ご準備ください。",
     room_btn: "診察室を確認",
-     room_modal_close: "閉じる",
-    room_modal_not_found: "見つからない場合は、総合案内カウンターへお問い合わせください。",
+    room_modal_close: "閉じる",
+    room_modal_not_found:
+      "見つからない場合は、総合案内カウンターへお問い合わせください。",
   },
   footer: {
     notice_title: "このページを閉じた場合",
     notice_desc: "QRコードを再度スキャンして順番を確認できます。",
     contact_staff: "ご不明な点はスタッフにお尋ねください。",
+  },
+  location: {
+    building: "棟",
+    floor: "階",
+    room: "診察室",
   },
   directions: {
     URO: "3号棟エレベーターで1階へ → 左折 → 直進10メートル",

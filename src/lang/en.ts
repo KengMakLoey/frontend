@@ -1,4 +1,4 @@
-import type { Dictionary } from "./types";
+import type { Dictionary } from "./lang_types";
 
 export const en: Dictionary = {
   common: {
@@ -52,12 +52,18 @@ export const en: Dictionary = {
     alert_near_message: "{count} queues remaining. Please get ready.",
     room_btn: "View Room Direction",
     room_modal_close: "Close",
-  room_modal_not_found: "If not found, please contact the information counter.",
+    room_modal_not_found:
+      "If not found, please contact the information counter.",
   },
   footer: {
     notice_title: "If you have exited this page",
     notice_desc: "You can scan the QR code again to view your queue.",
     contact_staff: "If you have any questions, please contact staff.",
+  },
+  location: {
+    building: "Building",
+    floor: "Floor",
+    room: "Room",
   },
   directions: {
     URO: "Take elevator in Building 3 to Floor 1 → Turn left → Walk 10 meters",
