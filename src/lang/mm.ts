@@ -1,4 +1,4 @@
-import type { Dictionary } from "./types";
+import type { Dictionary } from "./lang_types";
 
 export const mm: Dictionary = {
   common: {
@@ -58,6 +58,11 @@ export const mm: Dictionary = {
     notice_title: "ဤစာမျက်နှာမှ ထွက်သွားပါက",
     notice_desc: "QR ကုဒ်ကို ထပ်မံစကင်ဖတ်ပြီး အလှည့်ကို စစ်ဆေးနိုင်ပါသည်။",
     contact_staff: "မေးမြန်းလိုသည်များရှိပါက ဝန်ထမ်းနှင့် ဆက်သွယ်ပါ။",
+  },
+  location: {
+    building: "အဆောက်အဦး",
+    floor: "ထပ်",
+    room: "အခန်း",
   },
   directions: {
     URO: "အဆောက်အဦး 3 ၏ လိဖ်ကို စီး၍ ထပ် 1 သို့ → ဘယ်ကွေ့ → တည့်တည့် 10 မီတာ",

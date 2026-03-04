@@ -1,4 +1,4 @@
-import type { Dictionary } from "./types";
+import type { Dictionary } from "./lang_types";
 
 export const cn: Dictionary = {
   common: {
@@ -58,6 +58,11 @@ export const cn: Dictionary = {
     notice_title: "如果您已退出此页面",
     notice_desc: "您可以再次扫描二维码以查看排队进度。",
     contact_staff: "如有疑问，请联系工作人员。",
+  },
+  location: {
+    building: "楼",
+    floor: "层",
+    room: "诊室",
   },
   directions: {
     URO: "乘坐3号楼电梯至1楼 → 左转 → 直行10米",

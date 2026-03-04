@@ -1,4 +1,4 @@
-import type { Dictionary } from "./types";
+import type { Dictionary } from "./lang_types";
 
 export const km: Dictionary = {
   common: {
@@ -58,6 +58,11 @@ export const km: Dictionary = {
     notice_title: "ប្រសិនបើអ្នកចាកចេញពីទំព័រនេះ",
     notice_desc: "អ្នកអាចស្កេន QR Code ម្ដងទៀតដើម្បីមើលលេខរៀង",
     contact_staff: "ប្រសិនបើមានចម្ងល់ សូមទាក់ទងបុគ្គលិក",
+  },
+  location: {
+    building: "អគារ",
+    floor: "ជាន់",
+    room: "បន្ទប់",
   },
   directions: {
     URO: "ជិះជណ្តើរយន្តអគារ 3 ទៅជាន់ 1 → បត់ឆ្វេង → ដើរ똑 10 ម៉ែត្រ",

@@ -57,6 +57,11 @@ export interface Dictionary {
     notice_desc: string;
     contact_staff: string;
   };
+  location: {
+    building: string;
+    floor: string;
+    room: string;
+  };
   directions: {
     URO: string;
     PED: string;

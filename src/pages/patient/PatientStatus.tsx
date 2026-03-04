@@ -22,8 +22,28 @@ interface NotificationOverlayState {
   message: string;
 }
 
-export default function PatientStatus({ initialData, onBack }: PatientStatusProps) {
+export default function PatientStatus({
+  initialData,
+  onBack,
+}: PatientStatusProps) {
+  console.log("1. ข้อมูลเริ่มต้น (initialData):", initialData);
   const { t, currentLanguage } = useLanguage();
+  const getLocationText = (data: QueueData) => {
+    console.log("ข้อมูลที่ Backend ส่งมา:", data); // แปะบรรทัดนี้ลงไป
+    // 1. เช็คว่าถ้าไม่มีข้อมูลอะไรส่งมาเลย ให้ใช้ของเดิม
+    if (!data.building && !data.floor && !data.room) {
+      return data.departmentLocation || t.status.room;
+    }
+
+    // 2. ถ้ามีข้อมูล ค่อยๆ นำมาประกอบกันทีละส่วน (รองรับกรณีบางห้องไม่มีชั้น หรือไม่มีอาคาร)
+    const parts = [];
+    if (data.building) parts.push(`${t.location.building} ${data.building}`);
+    if (data.floor) parts.push(`${t.location.floor} ${data.floor}`);
+    if (data.room) parts.push(`${t.location.room} ${data.room}`);
+
+    return parts.join(" "); // นำมาต่อกันด้วยช่องว่าง
+  };
+
   const [queueData, setQueueData] = useState<QueueData>(initialData);
   const [currentTime, setCurrentTime] = useState("");
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -68,8 +88,7 @@ export default function PatientStatus({ initialData, onBack }: PatientStatusProp
           !hasPlayedSound.current
         ) {
           if (soundEnabled) {
-            const locationLabel =
-              updatedData.departmentLocation || t.status.room;
+            const locationLabel = getLocationText(updatedData);
             const message = `${t.status.called} ${updatedData.queueNumber} ${locationLabel}`;
             playTTS(message);
           }
@@ -362,38 +381,39 @@ export default function PatientStatus({ initialData, onBack }: PatientStatusProp
 
   return (
     <div className="min-h-[100svh] w-full flex flex-col bg-white font-sans relative">
-
       <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-blue-50/50 to-transparent -z-10" />
 
       <div className="shrink-0">
         <Header />
       </div>
 
-       {/* ฺBack Button */}
-        <div style={{
+      {/* ฺBack Button */}
+      <div
+        style={{
           position: "sticky",
           top: 0,
           zIndex: 40,
           backgroundColor: "white",
           padding: "8px 16px",
-        }}>
-          <button
-            onClick={onBack}
-            style={{
-              backgroundColor: "transparent",
-              color: "#044C72",
-              border: "none",
-              fontWeight: "bold",
-              fontSize: "16px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-            }}
-          >
-            ← {t.common.back}
-          </button>
-        </div>
+        }}
+      >
+        <button
+          onClick={onBack}
+          style={{
+            backgroundColor: "transparent",
+            color: "#044C72",
+            border: "none",
+            fontWeight: "bold",
+            fontSize: "16px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+          }}
+        >
+          ← {t.common.back}
+        </button>
+      </div>
 
       <main className="flex-1 flex flex-col items-center px-4 py-4 pb-6 w-full overflow-y-auto">
         {/* Top Section */}
@@ -403,7 +423,7 @@ export default function PatientStatus({ initialData, onBack }: PatientStatusProp
             className="px-6 py-2 rounded-full shadow-md text-white font-bold text-lg md:text-xl tracking-wide"
             style={{ backgroundColor: THEME_TEAL }}
           >
-            {queueData.departmentLocation || t.status.room}
+            {getLocationText(queueData)}
           </div>
 
           {/* Queue Number */}
@@ -534,77 +554,85 @@ export default function PatientStatus({ initialData, onBack }: PatientStatusProp
       </div>
 
       {showRoomModal && (
-      <div
-        className="fixed inset-0 flex items-center justify-center z-50"
-        style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
-        onClick={() => setShowRoomModal(false)}
-      >
         <div
-          className="bg-white rounded-3xl p-8 mx-4 shadow-2xl w-full max-w-sm relative"
-          onClick={(e) => e.stopPropagation()}
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+          onClick={() => setShowRoomModal(false)}
         >
-          {/* ปุ่มปิด */}
-          <button
-            onClick={() => setShowRoomModal(false)}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          <div
+            className="bg-white rounded-3xl p-8 mx-4 shadow-2xl w-full max-w-sm relative"
+            onClick={(e) => e.stopPropagation()}
           >
-            <X className="w-5 h-5" />
-          </button>
+            {/* ปุ่มปิด */}
+            <button
+              onClick={() => setShowRoomModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-          {/* ชื่อห้อง */}
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-[#044C72]">
-              {queueData.departmentLocation || t.status.room}
-            </h2>
-
-          </div>
-
-          {/* รูปภาพ */}
-          <div className="w-full rounded-2xl mb-6 overflow-hidden" style={{ height: "160px" }}>
-          {queueData.roomImage && !imageError ? (
-            <img
-              src={`/${queueData.roomImage}`}
-              alt={queueData.department}
-              className="w-full h-full object-cover"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <p className="text-sm text-gray-400">( ภาพประกอบ )</p>
+            {/* ชื่อห้อง */}
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-[#044C72]">
+                {getLocationText(queueData)}
+              </h2>
             </div>
-          )}
-        </div>
 
-       <div className="flex justify-center">
-        <ol className="text-base space-y-3 mb-6 inline-block">
-          {(t.directions[queueData.departmentCode as keyof typeof t.directions] ?? "")
-            .split("→")
-            .map((step, i) => (
-              <li key={i} className="flex gap-2">
-                <span className="font-bold text-[#044C72] shrink-0">{i + 1}.</span>
-                <span style={{ color: "#044C72" }}>{step.trim()}</span>
-              </li>
-            ))}
-        </ol>
-      </div>
+            {/* รูปภาพ */}
+            <div
+              className="w-full rounded-2xl mb-6 overflow-hidden"
+              style={{ height: "160px" }}
+            >
+              {queueData.roomImage && !imageError ? (
+                <img
+                  src={`/${queueData.roomImage}`}
+                  alt={queueData.department}
+                  className="w-full h-full object-cover"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <p className="text-sm text-gray-400">( ภาพประกอบ )</p>
+                </div>
+              )}
+            </div>
 
-          {/* ปุ่มปิด */}
-          <div className="flex justify-center">
-          <button
-            onClick={() => setShowRoomModal(false)}
-            className="py-2 px-10 rounded-full text-white text-lg"
-            style={{ backgroundColor: "#939393" }}
-          >
-            {t.patient_status.room_modal_close}
-          </button>
-        </div>
+            <div className="flex justify-center">
+              <ol className="text-base space-y-3 mb-6 inline-block">
+                {(
+                  t.directions[
+                    queueData.departmentCode as keyof typeof t.directions
+                  ] ?? ""
+                )
+                  .split("→")
+                  .map((step, i) => (
+                    <li key={i} className="flex gap-2">
+                      <span className="font-bold text-[#044C72] shrink-0">
+                        {i + 1}.
+                      </span>
+                      <span style={{ color: "#044C72" }}>{step.trim()}</span>
+                    </li>
+                  ))}
+              </ol>
+            </div>
 
-          <p className="text-center text-xs text-gray-400 mt-3">
-            {t.patient_status.room_modal_not_found}
-          </p>
+            {/* ปุ่มปิด */}
+            <div className="flex justify-center">
+              <button
+                onClick={() => setShowRoomModal(false)}
+                className="py-2 px-10 rounded-full text-white text-lg"
+                style={{ backgroundColor: "#939393" }}
+              >
+                {t.patient_status.room_modal_close}
+              </button>
+            </div>
+
+            <p className="text-center text-xs text-gray-400 mt-3">
+              {t.patient_status.room_modal_not_found}
+            </p>
+          </div>
         </div>
-      </div>
-    )}
+      )}
     </div>
   );
 }

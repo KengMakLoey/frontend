@@ -1,4 +1,4 @@
-import type { Dictionary } from "./types";
+import type { Dictionary } from "./lang_types";
 
 export const la: Dictionary = {
   common: {
@@ -58,6 +58,11 @@ export const la: Dictionary = {
     notice_title: "ຫາກທ່ານອອກຈາກໜ້ານີ້",
     notice_desc: "ທ່ານສາມາດສະແກນ QR Code ໃໝ່ເພື່ອເບິ່ງຄິວໄດ້ອີກຄັ້ງ",
     contact_staff: "ຫາກມີຂໍ້ສົງໄສ ກະລຸນາຕິດຕໍ່ເຈົ້າໜ້າທີ່",
+  },
+  location: {
+    building: "ຕຶກ",
+    floor: "ຊັ້ນ",
+    room: "ຫ້ອງ",
   },
   directions: {
     URO: "ຂຶ້ນລິຟຕ໌ຕຶກ 3 ໄປຊັ້ນ 1 → ຫັນຊ້າຍ → ຍ່າງກົງ 10 ແມັດ",
