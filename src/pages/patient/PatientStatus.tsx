@@ -560,20 +560,27 @@ export default function PatientStatus({ initialData, onBack }: PatientStatusProp
           </div>
 
           {/* รูปภาพ */}
-          <div className="w-full rounded-2xl mb-6 overflow-hidden" style={{ height: "160px" }}>
-          {queueData.roomImage && !imageError ? (
-            <img
-              src={`/${queueData.roomImage}`}
-              alt={queueData.department}
-              className="w-full h-full object-cover"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <p className="text-sm text-gray-400">( ภาพประกอบ )</p>
-            </div>
-          )}
-        </div>
+          <div
+            className="w-full rounded-2xl mb-6 overflow-hidden"
+            style={{ height: "160px" }}
+          >
+            {queueData?.departmentCode && !imageError ? (
+              <img
+                src={`/rooms/${queueData.departmentCode.toLowerCase()}.jpg`}
+                alt={queueData.department}
+                className="w-full h-full object-cover"
+                onError={() => setImageError(true)}
+              />
+              // <img
+              //   src="/rooms/uro.jpg"
+              //   className="w-full h-full object-cover"
+              // />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <p className="text-sm text-gray-400">( ภาพประกอบ )</p>
+              </div>
+            )}
+          </div>
 
        <div className="flex justify-center">
         <ol className="text-base space-y-3 mb-6 inline-block">
