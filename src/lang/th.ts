@@ -1,4 +1,4 @@
-import type { Dictionary } from "./types";
+import type { Dictionary } from "./lang_types";
 
 export const th: Dictionary = {
   common: {
@@ -52,7 +52,7 @@ export const th: Dictionary = {
     alert_near_message: "เหลืออีก {count} คิว กรุณาเตรียมตัว",
     room_btn: "ดูห้องที่ต้องไป",
     room_modal_close: "ปิด",
-  room_modal_not_found: "หากไม่พบ กรุณาติดต่อเคาน์เตอร์ประชาสัมพันธ์",
+    room_modal_not_found: "หากไม่พบ กรุณาติดต่อเคาน์เตอร์ประชาสัมพันธ์",
   },
   footer: {
     notice_title: "หากท่านได้ทำการออกหน้านี้",
@@ -61,6 +61,13 @@ export const th: Dictionary = {
   },
    directions: {
     URO: "จากจุดรอคิวชั้น 1 ตึก 3 → เดินไปโถงทางเดินหน้าทางห้องน้ำ",
+  location: {
+    building: "อาคาร",
+    floor: "ชั้น",
+    room: "ห้อง",
+  },
+  directions: {
+    URO: "ขึ้นลิฟต์ตึก 3 ไปชั้น 1 → เลี้ยวซ้าย → เดินตรง 10 เมตร",
     PED: "ขึ้นลิฟต์ตึก 3 ไปชั้น 2 → เลี้ยวขวา → เดินตรง 15 เมตร",
     OBG: "ขึ้นลิฟต์ตึก 3 ไปชั้น 2 → ห้อง G210 อยู่ทางซ้ายมือ",
     NCD: "ขึ้นลิฟต์ตึก 3 ไปชั้น 3 → เลี้ยวซ้ายไปทางห้องน้ำ → ห้อง M370 อยู่ทางขวามือ",

@@ -1,4 +1,4 @@
-import type { Dictionary } from "./types";
+import type { Dictionary } from "./lang_types";
 
 export const en: Dictionary = {
   common: {
@@ -52,7 +52,8 @@ export const en: Dictionary = {
     alert_near_message: "{count} queues remaining. Please get ready.",
     room_btn: "View Room Direction",
     room_modal_close: "Close",
-  room_modal_not_found: "If not found, please contact the information counter.",
+    room_modal_not_found:
+      "If not found, please contact the information counter.",
   },
   footer: {
     notice_title: "If you have exited this page",
@@ -60,6 +61,11 @@ export const en: Dictionary = {
     contact_staff: "If you have any questions, please contact staff.",
   },
   // en.ts
+  location: {
+    building: "Building",
+    floor: "Floor",
+    room: "Room",
+  },
   directions: {
     URO: "From the waiting area on 1st floor, Building 3 → Walk to the hallway in front of the restroom",
     PED: "Take the elevator in Building 3 to 2nd floor → Turn right → Walk straight 15 meters",
