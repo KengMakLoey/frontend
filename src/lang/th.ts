@@ -59,7 +59,7 @@ export const th: Dictionary = {
     notice_desc: "ท่านสามารถสแกนคิวอาร์โค้ดใหม่ เพื่อเข้าดูหน้าคิวได้อีกครั้ง",
     contact_staff: "หากมีข้อสงสัย กรุณาติดต่อเจ้าหน้าที่",
   },
-   directions: {
+  directions: {
     URO: "จากจุดรอคิวชั้น 1 ตึก 3 → เดินไปโถงทางเดินหน้าทางห้องน้ำ",
   location: {
     building: "อาคาร",
