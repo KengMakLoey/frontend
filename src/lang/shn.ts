@@ -1,4 +1,4 @@
-import type { Dictionary } from "./types";
+import type { Dictionary } from "./lang_types";
 
 export const shn: Dictionary = {
   common: {
@@ -52,13 +52,19 @@ export const shn: Dictionary = {
     alert_near_message: "ၵိုတ်းလိူဝ်ထႅင်ႈ {count} ၶိဝ်း ၶႅၼ်းတေႃႈၵၢင်ႈတူဝ်", // เหลืออีก ... คิว เตรียมตัว
     room_btn: "တူၺ်းႁွင်ႈ",
     room_modal_close: "ပိၵ်ႉ",
-    room_modal_not_found: "ပေႃးဢမ်ႇႁၼ် ၶႅၼ်းတေႃႈၵပ်းသိုပ်ႇ counter ၵပ်းသိုပ်ႇၸဝ်ႈၼႃႈတီႈ",
+    room_modal_not_found:
+      "ပေႃးဢမ်ႇႁၼ် ၶႅၼ်းတေႃႈၵပ်းသိုပ်ႇ counter ၵပ်းသိုပ်ႇၸဝ်ႈၼႃႈတီႈ",
   },
   footer: {
     notice_title: "ပေႃးဝႃႈၸဝ်ႈၵဝ်ႇဢွၵ်ႇၼႃႈၼႆႉ",
     notice_desc:
       "ၸဝ်ႈၵဝ်ႇၸၢင်ႈ Scan QR Code ၶိုၼ်းမႂ်ႇ ပုၼ်ႈတႃႇတူၺ်းၶိဝ်းလႆႈထႅင်ႈ",
     contact_staff: "ပေႃးမီးၶေႃႈၶွင်ႈၸႂ် ၶႅၼ်းတေႃႈၵပ်းသိုပ်ႇၸဝ်ႈၼႃႈတီႈ",
+  },
+  location: {
+    building: "တိူၵ်ႈ",
+    floor: "ၸၼ်ႉ",
+    room: "ႁွင်ႈ",
   },
   directions: {
     URO: "တႂ်ႈတီႈဢွၵ်ႇၶၢႆႉ မိူဝ်ႈထႅဝ်ၵူႇ 1 တိုင်ႇ 3 → ပႆတၢင်းၵႂႃႇတီႈတၢင်းလဵၼ်ႈ ၽၢႆႇၼႃႈႁွင်ႈၼမ်ႉ",

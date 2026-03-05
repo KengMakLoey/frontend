@@ -1,4 +1,4 @@
-import type { Dictionary } from "./types";
+import type { Dictionary } from "./lang_types";
 
 export const es: Dictionary = {
   common: {
@@ -52,12 +52,18 @@ export const es: Dictionary = {
     alert_near_message: "Quedan {count} turnos. Por favor prepárese.",
     room_btn: "Ver Sala",
     room_modal_close: "Cerrar",
-    room_modal_not_found: "Si no encuentra la sala, contacte al mostrador de información.",
+    room_modal_not_found:
+      "Si no encuentra la sala, contacte al mostrador de información.",
   },
   footer: {
     notice_title: "Si ha salido de esta página",
     notice_desc: "Puede escanear el código QR nuevamente para ver su cola.",
     contact_staff: "Si tiene preguntas, por favor contacte al personal.",
+  },
+  location: {
+    building: "Edificio",
+    floor: "Piso",
+    room: "Sala",
   },
   directions: {
     URO: "Desde el área de espera en el 1er piso, Edificio 3 → Camine al pasillo frente al baño",

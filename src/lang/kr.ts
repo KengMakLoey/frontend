@@ -1,4 +1,4 @@
-import type { Dictionary } from "./types";
+import type { Dictionary } from "./lang_types";
 
 export const kr: Dictionary = {
   common: {
@@ -58,6 +58,11 @@ export const kr: Dictionary = {
     notice_title: "이 페이지를 닫은 경우",
     notice_desc: "QR 코드를 다시 스캔하여 대기열을 확인할 수 있습니다.",
     contact_staff: "궁금한 점이 있으면 직원에게 문의하십시오.",
+  },
+  location: {
+    building: "건물",
+    floor: "층",
+    room: "진료실",
   },
   directions: {
     URO: "3동 1층 대기실에서 → 화장실 앞 복도로 이동",

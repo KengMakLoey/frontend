@@ -5,7 +5,7 @@ import React, {
   type ReactNode,
 } from "react";
 
-import type { Dictionary } from "../../lang/types";
+import type { Dictionary } from "../../lang/lang_types";
 
 // Import ภาษาเดิม
 import { th } from "../../lang/th";
