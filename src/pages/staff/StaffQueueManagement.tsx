@@ -8,6 +8,7 @@ import {
   PlusCircle,
   Hourglass,
   CheckCircle,
+  Siren,
 } from "lucide-react";
 import type { StaffData, StaffQueue } from "../../components/shared/types";
 import { API } from "../../components/shared/api";
@@ -46,10 +47,20 @@ export default function QueueManagement({
   const [queueToSkip, setQueueToSkip] = useState<StaffQueue | null>(null);
   const [arrivedQueues, setArrivedQueues] = useState<Map<number, Date>>(new Map());
   const [queuePriority, setQueuePriority] = useState<"normal" | "urgent" | "emergency">("normal");
-  const [queuePriorities, setQueuePriorities] = useState<Map<number, "urgent" | "emergency">>(new Map());
   const [successQueue, setSuccessQueue] = useState<{ queueNumber: string; patientName: string; vn: string } | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+
+  const getPriority = (queue: StaffQueue): "normal" | "urgent" | "emergency" => {
+    if ((queue.priorityScore ?? 0) >= 2) return "emergency";
+    if ((queue.priorityScore ?? 0) === 1) return "urgent";
+    return "normal";
+  };
+
+  const priorityQueues = waitingQueues
+    .filter(q => (q.priorityScore ?? 0) >= 1 && (q.priorityScore ?? 0) <= 2)
+    .sort((a, b) => (b.priorityScore ?? 0) - (a.priorityScore ?? 0));
+    
   const handleRefresh = async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
@@ -177,11 +188,8 @@ export default function QueueManagement({
 
     setLoading(true);
     try {
-      const result = await API.createQueue(inputVN, staffData.staffId);
-      if (queuePriority !== "normal" && result.queueId) {
-        setQueuePriorities(prev => new Map(prev).set(result.queueId!, queuePriority));
-      }
-      setQueuePriority("normal");
+      const priorityScore = queuePriority === "emergency" ? 2 : queuePriority === "urgent" ? 1 : 0;
+      const result = await API.createQueue(inputVN, staffData.staffId, priorityScore);
 
       setSuccessQueue({
         queueNumber: result.queueNumber ?? "",
@@ -240,18 +248,15 @@ export default function QueueManagement({
         </div>
 
         {/* Main Grid - 2 Columns */}
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Left Column - Create Queue & Waiting List */}
+        <div className="grid lg:grid-cols-2 gap-6 items-start">
+          {/* Left Column */}
           <div className="space-y-6">
             {/* Create Queue */}
-            <div
-              className="bg-white rounded-2xl shadow-xl overflow-hidden"
-              style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
-            >
-              <div className=" py-3 text-center" style={{ backgroundColor: "#39AAAD" }}>
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}>
+              <div className="py-3 text-center" style={{ backgroundColor: "#39AAAD" }}>
                 <p className="text-white font-bold">สร้างคิวใหม่</p>
               </div>
-              <div className="p-6">
+              <div className="p-8">
                 <form onSubmit={handleCreateQueue} className="space-y-3">
                   <div>
                     <label
@@ -313,6 +318,9 @@ export default function QueueManagement({
                 <p className="text-white font-bold flex items-center justify-center gap-2">
                   <Hourglass className="w-5 h-5" />
                   คิวที่รออยู่
+                  <span className="bg-white text-orange-500 text-xs font-bold px-2 py-0.5 rounded-full">
+                        {waitingQueues.length}
+                  </span>
                 </p>
               </div>
               <div className="p-6">
@@ -345,12 +353,12 @@ export default function QueueManagement({
                             <p className="text-sm text-gray-500">
                               Tel: {queue.phoneNumber}
                             </p>
-                            {queuePriorities.get(queue.queueId) === "emergency" && (
+                            {getPriority(queue) === "emergency" && (
                               <span className="bg-red-100 text-red-600 border border-red-400 px-2 py-0.5 rounded-full text-xs font-bold">
                                 ฉุกเฉิน
                               </span>
                             )}
-                            {queuePriorities.get(queue.queueId) === "urgent" && (
+                            {getPriority(queue) === "urgent" && (
                               <span className="bg-orange-100 text-orange-600 border border-orange-400 px-2 py-0.5 rounded-full text-xs font-bold">
                                 เร่งด่วน
                               </span>
@@ -476,7 +484,7 @@ export default function QueueManagement({
                     )}
                   </div>
                 ) : (
-                  <div className="text-center py-12">
+                  <div className="text-center py-3">
                     <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-500 text-lg mb-6">
                       ไม่คิวในขณะนี้ กรุณาเพิ่มคิวปัจจุบัน
@@ -496,6 +504,65 @@ export default function QueueManagement({
               </div>
             </div>
 
+              {/* Priority Queues */}
+              {priorityQueues.length > 0 && (
+                <div
+                  className="bg-white rounded-2xl shadow-xl overflow-hidden"
+                  style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
+                >
+                  <div className="py-3 text-center" style={{ backgroundColor: "#F97316" }}>
+                    <p className="text-white font-bold flex items-center justify-center gap-2">
+                      <Siren className="w-5 h-5" />
+                      คิวเร่งด่วน / ฉุกเฉิน
+                      <span className="bg-white text-orange-500 text-xs font-bold px-2 py-0.5 rounded-full">
+                        {priorityQueues.length}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="p-6">
+                    <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                      {priorityQueues.map((queue) => (
+                        <div
+                          key={queue.queueId}
+                          className={`bg-white rounded-3xl px-6 py-4 border-2 transition-colors shadow-sm ${
+                            getPriority(queue) === "emergency"
+                              ? "border-red-400 hover:border-red-500"
+                              : "border-orange-300 hover:border-orange-400"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="text-4xl font-bold" style={{ color: "#044C72" }}>
+                              {queue.queueNumber}
+                            </div>
+                            <div className="flex-1 mx-6">
+                              <p className="font-bold text-gray-800 text-lg">{queue.patientName}</p>
+                              <p className="text-sm text-gray-500">VN{queue.vn.split("-").pop()}</p>
+                              <p className="text-sm text-gray-500">Tel: {queue.phoneNumber}</p>
+                              {getPriority(queue) === "emergency" && (
+                                <span className="bg-red-100 text-red-600 border border-red-400 px-2 py-0.5 rounded-full text-xs font-bold">ฉุกเฉิน</span>
+                              )}
+                              {getPriority(queue) === "urgent" && (
+                                <span className="bg-orange-100 text-orange-600 border border-orange-400 px-2 py-0.5 rounded-full text-xs font-bold">เร่งด่วน</span>
+                              )}
+                            </div>
+                            {!currentCalledQueue && (
+                              <button
+                                onClick={() => handleCallQueue(queue)}
+                                className="text-white px-8 py-3 rounded-full font-bold flex items-center shadow-md text-lg"
+                                style={{ backgroundColor: "#87E74B" }}
+                              >
+                                <Bell className="w-5 h-5 mr-2" />
+                                เรียก
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}  
+
             {/* Skipped Queues */}
             <div
               className="bg-white rounded-2xl shadow-xl overflow-hidden"
@@ -508,6 +575,9 @@ export default function QueueManagement({
                 <p className="text-white font-bold flex items-center justify-center gap-2">
                   <AlertCircle className="w-5 h-5" />
                   คิวที่ถูกข้าม
+                  <span className="bg-white text-red-500 text-xs font-bold px-2 py-0.5 rounded-full">
+                        {skippedQueues.length}
+                  </span>
                 </p>
               </div>
               <div className="p-6">
@@ -550,12 +620,12 @@ export default function QueueManagement({
                               Tel: {queue.phoneNumber}
                             </p>
 
-                            {queuePriorities.get(queue.queueId) === "emergency" && (
+                            {getPriority(queue) === "emergency" && (
                               <span className="bg-red-100 text-red-600 border border-red-400 px-2 py-0.5 rounded-full text-xs font-bold">
                                 ฉุกเฉิน
                               </span>
                             )}
-                            {queuePriorities.get(queue.queueId) === "urgent" && (
+                            {getPriority(queue) === "urgent" && (
                               <span className="bg-orange-100 text-orange-600 border border-orange-400 px-2 py-0.5 rounded-full text-xs font-bold">
                                 เร่งด่วน
                               </span>

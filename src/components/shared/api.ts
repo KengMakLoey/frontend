@@ -112,11 +112,11 @@ export const API = {
     return response.json();
   },
 
-  async createQueue(vn: string, staffId: number): Promise<ApiResponse> {
+  async createQueue(vn: string, staffId: number, priorityScore: number = 0): Promise<ApiResponse> {
     const response = await fetch(`${API_URL}/api/staff/queue/create`, {
       method: "POST",
-      headers: authHeaders(),  
-      body: JSON.stringify({ vn, staffId }),
+      headers: authHeaders(),
+      body: JSON.stringify({ vn, staffId, priorityScore }),
     });
     if (!response.ok) {
       const error = await response.json();
