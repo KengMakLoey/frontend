@@ -38,7 +38,7 @@ export interface StaffQueue {
   status: "waiting" | "called" | "in_progress" | "completed" | "skipped";
   issuedTime: string;
   isSkipped: boolean;
-  priorityScore: number;
+  priorityScore?: number;
   skippedTime?: string;
 }
 

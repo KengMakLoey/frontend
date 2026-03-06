@@ -8,6 +8,7 @@ import {
   Building2,
   Clock,
   LogOut,
+  Siren,
 } from "lucide-react";
 import type { StaffData, StaffQueue } from "../../components/shared/types";
 import { API } from "../../components/shared/api";
@@ -208,6 +209,9 @@ export default function StaffView({ onBack }: StaffViewProps) {
     const currentQueue = staffQueues.find(
       (q) => q.status === "called" || q.status === "in_progress"
     );
+    const priorityQueues = waitingQueues
+    .filter(q => (q.priorityScore ?? 0) >= 1 && (q.priorityScore ?? 0) <= 2)
+    .sort((a, b) => (b.priorityScore ?? 0) - (a.priorityScore ?? 0));
 
     return (
       <div className="container mx-auto px-4 py-8">
@@ -454,6 +458,57 @@ export default function StaffView({ onBack }: StaffViewProps) {
                 </div>
               </div>
             </div>
+
+            {priorityQueues.length > 0 && (
+            <div
+              className="bg-white rounded-2xl shadow-xl overflow-hidden"
+              style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
+            >
+              <div className="py-3 text-center" style={{ backgroundColor: "#F97316" }}>
+                <p className="text-white font-bold flex items-center justify-center gap-2">
+                  <Siren className="w-5 h-5" />
+                  คิวเร่งด่วน / ฉุกเฉิน
+                </p>
+              </div>
+              <div className="p-6">
+                <div className="space-y-3">
+                  {priorityQueues.map((queue) => (
+                    <div
+                      key={queue.queueId}
+                      className={`flex items-center justify-between rounded-xl p-4 border-2 ${
+                        (queue.priorityScore ?? 0) >= 2
+                          ? "bg-red-50 border-red-300"
+                          : "bg-orange-50 border-orange-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div
+                          className="rounded-full p-3"
+                          style={{ backgroundColor: (queue.priorityScore ?? 0) >= 2 ? "#FF4C4C" : "#F97316" }}
+                        >
+                          <User className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="text-4xl font-bold" style={{ color: "#044C72" }}>
+                          {queue.queueNumber}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-gray-800 text-lg">{queue.patientName}</p>
+                        <p className="text-sm text-gray-500">VN{queue.vn.split("-").pop()}</p>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                          (queue.priorityScore ?? 0) >= 2
+                            ? "bg-red-100 text-red-600 border border-red-400"
+                            : "bg-orange-100 text-orange-600 border border-orange-400"
+                        }`}>
+                          {(queue.priorityScore ?? 0) >= 2 ? "ฉุกเฉิน" : "เร่งด่วน"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
             {skippedQueues.length > 0 && (
               <div
