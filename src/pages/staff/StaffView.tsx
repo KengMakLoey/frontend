@@ -30,7 +30,14 @@ export default function StaffView({ onBack }: StaffViewProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isStaffLoggedIn, setIsStaffLoggedIn] = useState(() => {
-   return !!localStorage.getItem("staff_token");
+  const token = localStorage.getItem("staff_token");
+    if (token && !token.startsWith("eyJ")) {
+      localStorage.removeItem("staff_token");
+      localStorage.removeItem("staff_data");
+      localStorage.removeItem("staff_view");
+      return false;
+    }
+    return !!token;
   });
   const [staffData, setStaffData] = useState<StaffData | null>(() => {
     const saved = localStorage.getItem("staff_data");
