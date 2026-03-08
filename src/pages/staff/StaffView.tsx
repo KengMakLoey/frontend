@@ -123,12 +123,13 @@ export default function StaffView({ onBack }: StaffViewProps) {
   };
 
   const handleLogout = () => {
+    // 1. ล้างข้อมูลใน Storage ให้หมด
     localStorage.removeItem("staff_token");
     localStorage.removeItem("staff_data");
     localStorage.removeItem("staff_view");
-    setIsStaffLoggedIn(false);
-    setStaffData(null);
-    onBack();
+
+    // 2. ใช้คำสั่งนี้เพื่อบังคับให้เบราว์เซอร์โหลดหน้าเว็บใหม่ทั้งหมด
+    window.location.href = "/"; 
   };
 
   if (!isStaffLoggedIn) {
