@@ -30,7 +30,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isStaffLoggedIn, setIsStaffLoggedIn] = useState(() => {
-    return localStorage.getItem("staff_token") === "true";
+   return !!localStorage.getItem("staff_token");
   });
   const [staffData, setStaffData] = useState<StaffData | null>(() => {
     const saved = localStorage.getItem("staff_data");
@@ -100,7 +100,6 @@ export default function StaffView({ onBack }: StaffViewProps) {
       if (result) {
         setIsStaffLoggedIn(true);
         setStaffData(result);
-        localStorage.setItem("staff_token", "true");
         localStorage.setItem("staff_data", JSON.stringify(result));
       } else {
         setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
