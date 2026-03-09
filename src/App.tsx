@@ -13,7 +13,7 @@ export default function App() {
     // ตรวจ patient ก่อน
     if (sessionStorage.getItem("patient_queue")) return "queue-status";
     // ตรวจ staff
-    if (localStorage.getItem("staff_token") === "true") return "staff";
+    if (localStorage.getItem("staff_token")?.startsWith("eyJ")) return "staff";
     return "landing";
   });
 
