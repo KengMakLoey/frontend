@@ -108,7 +108,7 @@ export default function QueueManagement({
   } else if (!stillActive) {
     setCurrentCalledQueue(null);
   }
-  }, [staffQueues, currentCalledQueue]);
+  }, [staffQueues]);
 
   const handleCallQueue = async (queue: StaffQueue) => {
     try {
