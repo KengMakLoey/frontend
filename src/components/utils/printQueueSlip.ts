@@ -154,5 +154,6 @@ export const printQueueSlip = async (queue: {
     printWindow.focus();
     printWindow.print();
     printWindow.close();
+    window.focus();
   };
 };
