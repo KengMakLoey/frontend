@@ -108,7 +108,7 @@ export default function QueueManagement({
   } else if (!stillActive) {
     setCurrentCalledQueue(null);
   }
-  }, [staffQueues, currentCalledQueue]);
+  }, [staffQueues]);
 
   const handleCallQueue = async (queue: StaffQueue) => {
     try {
@@ -168,16 +168,6 @@ export default function QueueManagement({
       await onRefresh();
     } catch (err) {
       alert("เกิดข้อผิดพลาดในการทำรายการให้เสร็จสิ้น");
-    }
-  };
-
-  const handleRecallSkipped = async (queueId: number) => {
-    if (!confirm("ต้องการให้คนไข้เข้าคิวใหม่ใช่หรือไม่?")) return;
-    try {
-      await API.recallSkippedQueue(queueId, staffData?.staffName || "staff");
-      await onRefresh();
-    } catch (err) {
-      alert("เกิดข้อผิดพลาดในการเรียกคืนคิว");
     }
   };
 
