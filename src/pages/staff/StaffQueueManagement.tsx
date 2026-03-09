@@ -35,21 +35,45 @@ export default function QueueManagement({
         ) || null
     );
 
+    
+  const ARRIVED_KEY = "arrivedQueues";
+  const loadArrivedQueues = (): Map<number, Date> => {
+    try {
+      const saved = sessionStorage.getItem(ARRIVED_KEY);
+      if (!saved) return new Map();
+      return new Map((JSON.parse(saved) as [number, string][]).map(([k, v]) => [k, new Date(v)]));
+    } catch { return new Map(); }
+  };
+
   const waitingQueues = staffQueues.filter(
     (q) => q.status === "waiting" && !q.isSkipped
   );
   const skippedQueues = staffQueues.filter((q) => q.isSkipped);
   const nextQueue = waitingQueues[0];
   const [loading, setLoading] = useState(false);
-  const [showCreateQueue, setShowCreateQueue] = useState(false);
   const [newQueueVN, setNewQueueVN] = useState("");
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const [queueToSkip, setQueueToSkip] = useState<StaffQueue | null>(null);
-  const [arrivedQueues, setArrivedQueues] = useState<Map<number, Date>>(new Map());
+  const [arrivedQueues, setArrivedQueues] = useState<Map<number, Date>>(loadArrivedQueues);
   const [queuePriority, setQueuePriority] = useState<"normal" | "urgent" | "emergency">("normal");
   const [successQueue, setSuccessQueue] = useState<{ queueNumber: string; patientName: string; vn: string } | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const markArrived = (queueId: number) => {
+    setArrivedQueues(prev => {
+      const next = new Map(prev).set(queueId, new Date());
+      sessionStorage.setItem(ARRIVED_KEY, JSON.stringify([...next]));
+      return next;
+    });
+  };
+  const clearArrived = (queueId: number) => {
+    setArrivedQueues(prev => {
+      const next = new Map(prev);
+      next.delete(queueId);
+      sessionStorage.setItem(ARRIVED_KEY, JSON.stringify([...next]));
+      return next;
+    });
+  };
 
   const getPriority = (queue: StaffQueue): "normal" | "urgent" | "emergency" => {
     if ((queue.priorityScore ?? 0) >= 2) return "emergency";
@@ -72,18 +96,19 @@ export default function QueueManagement({
   };
 
   useEffect(() => {
-    const called = staffQueues.find(
-      (q) => q.status === "called" || q.status === "in_progress"
-    );
-    if (called) {
-      setCurrentCalledQueue(called);
-    } else if (
-      currentCalledQueue &&
-      !staffQueues.find((q) => q.queueId === currentCalledQueue.queueId)
-    ) {
-      setCurrentCalledQueue(null);
-    }
-  }, [staffQueues]);
+    const stillActive = staffQueues.find(
+    (q) => q.queueId === currentCalledQueue?.queueId &&
+    (q.status === "called" || q.status === "in_progress")
+  );
+  const newCalled = staffQueues.find(
+    (q) => q.status === "called" || q.status === "in_progress"
+  );
+  if (newCalled) {
+    setCurrentCalledQueue(newCalled);
+  } else if (!stillActive) {
+    setCurrentCalledQueue(null);
+  }
+  }, [staffQueues, currentCalledQueue]);
 
   const handleCallQueue = async (queue: StaffQueue) => {
     try {
@@ -91,7 +116,8 @@ export default function QueueManagement({
       setCurrentCalledQueue(queue);
       await onRefresh();
     } catch (err) {
-      alert("เกิดข้อผิดพลาดในการเรียกคิว");
+      const error = err as Error;
+      alert(error.message || "เกิดข้อผิดพลาดในการเรียกคิว");
     }
   };
 
@@ -123,11 +149,7 @@ export default function QueueManagement({
       }
 
       // ล้างสถานะมาแล้วออก
-      setArrivedQueues(prev => {
-        const next = new Map(prev);
-        next.delete(queueToSkip.queueId);
-        return next;
-      });
+      clearArrived(queueToSkip.queueId);
 
       await onRefresh();
     } catch (err) {
@@ -141,6 +163,7 @@ export default function QueueManagement({
   const handleCompleteQueue = async (queueId: number) => {
     try {
       await API.completeQueue(queueId, staffData?.staffName || "staff");
+      clearArrived(queueId);
       setCurrentCalledQueue(null);
       await onRefresh();
     } catch (err) {
@@ -197,7 +220,6 @@ export default function QueueManagement({
         vn: inputVN,
       });
       setNewQueueVN("");
-      setShowCreateQueue(false);
       await onRefresh();
     } catch (err) {
       const error = err as Error;
@@ -468,10 +490,19 @@ export default function QueueManagement({
                         {nextQueue && (
                           <button
                             onClick={async () => {
-                              await handleCompleteQueue(
-                                currentCalledQueue.queueId
-                              );
-                              setTimeout(() => handleCallQueue(nextQueue), 500);
+                              const nextQueueId = nextQueue.queueId; // snapshot id ไว้ก่อน
+                              const staffName = staffData?.staffName || "staff";
+                              try {
+                                await API.completeQueue(currentCalledQueue.queueId, staffName);
+                                clearArrived(currentCalledQueue.queueId);
+                                await API.callQueue(nextQueueId, staffName);
+                                setCurrentCalledQueue(nextQueue);
+                                await onRefresh();
+                              } catch (err) {
+                                const error = err as Error;
+                                alert(error.message || "เกิดข้อผิดพลาด");
+                                await onRefresh();
+                              }
                             }}
                             className="text-white px-4 py-3 rounded-lg hover:bg-orange-200 flex items-center justify-center font-semibold"
                             style={{ backgroundColor: "#FFAE3C" }}
@@ -666,7 +697,7 @@ export default function QueueManagement({
                     </>
                   ) : (
                     <button
-                      onClick={() => setArrivedQueues(prev => new Map(prev).set(queue.queueId, new Date()))}
+                      onClick={() => markArrived(queue.queueId)}
                       className="flex items-center gap-1 bg-white text-green-600 border-2 border-green-400 px-3 py-1.5 rounded-full font-bold text-sm hover:bg-green-50 transition-colors"
                     >
                       <CheckSquare className="w-4 h-4" />
@@ -677,8 +708,14 @@ export default function QueueManagement({
                         </div>
                       </div>
                     ))
-                  )}
-                  {/* Skip Confirmation Modal */}
+                  )}                  
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Skip Confirmation Modal */}
                   {showSkipConfirm && queueToSkip && (
                     <div
                       className="fixed inset-0 flex items-center justify-center z-50"
@@ -813,12 +850,6 @@ export default function QueueManagement({
                       </div>
                     </div>
                   )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

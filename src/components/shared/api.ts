@@ -66,7 +66,10 @@ export const API = {
       headers: authHeaders(),  
       body: JSON.stringify({ staffName }),
     });
-    if (!response.ok) throw new Error("Failed to call queue");
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || "Failed to call queue");
+    }
     return response.json();
   },
 
