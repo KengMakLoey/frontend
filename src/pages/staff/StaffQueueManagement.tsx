@@ -821,10 +821,13 @@ export default function QueueManagement({
                         {/* ปุ่ม */}
                         <div className="grid grid-cols-2 gap-3">
                           <button
-                            onClick={() => printQueueSlip({
-                              ...successQueue,
-                              departmentName: staffData?.departmentName,
-                            })}
+                            onClick={() => {
+                              printQueueSlip({
+                                ...successQueue,
+                                departmentName: staffData?.departmentName,
+                              });
+                              setSuccessQueue(null);
+                            }}
                             className="px-6 py-3 text-white rounded-xl font-bold text-base shadow-lg hover:opacity-90"
                             style={{ backgroundColor: "#939393" }}
                           >
