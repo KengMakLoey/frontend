@@ -171,16 +171,6 @@ export default function QueueManagement({
     }
   };
 
-  const handleRecallSkipped = async (queueId: number) => {
-    if (!confirm("ต้องการให้คนไข้เข้าคิวใหม่ใช่หรือไม่?")) return;
-    try {
-      await API.recallSkippedQueue(queueId, staffData?.staffName || "staff");
-      await onRefresh();
-    } catch (err) {
-      alert("เกิดข้อผิดพลาดในการเรียกคืนคิว");
-    }
-  };
-
   const handleCreateQueue = async (e: React.FormEvent) => {
     e.preventDefault();
 
