@@ -5,13 +5,19 @@ export interface QueueData {
   patientName: string;
   department: string;
   departmentLocation: string;
-  status: 'waiting' | 'called' | 'in_progress' | 'completed' | 'skipped';
+  building?: string;
+  floor?: string;
+  room?: string;
+  status: "waiting" | "called" | "in_progress" | "completed" | "skipped";
   currentQueue: string;
   yourPosition: number;
   estimatedTime: string;
   issuedTime: string;
   priorityScore: number;
   isSkipped: boolean;
+  roomImage?: string;
+  directions?: string;
+  departmentCode?: string;
 }
 
 export interface StaffData {
@@ -27,25 +33,25 @@ export interface StaffQueue {
   queueId: number;
   queueNumber: string;
   patientName: string;
-  phoneNumber: string; 
+  phoneNumber: string;
   vn: string;
-  status: 'waiting' | 'called' | 'in_progress' | 'completed' | 'skipped';
+  status: "waiting" | "called" | "in_progress" | "completed" | "skipped";
   issuedTime: string;
   isSkipped: boolean;
-  priorityScore: number;
+  priorityScore?: number;
   skippedTime?: string;
 }
 
 export interface ApiResponse {
   success: boolean;
   message: string;
-  queueNumber?: string;  
-  queueId?: number;     
-  patientInfo?: {      
+  queueNumber?: string;
+  queueId?: number;
+  patientInfo?: {
     name: string;
     phone: string;
     queueNumber: string;
   };
 }
 
-export type ViewType = 'landing' | 'patient' | 'staff';
+export type ViewType = "landing" | "patient" | "staff";

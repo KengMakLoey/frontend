@@ -4,6 +4,14 @@ import type { QueueData, StaffData, StaffQueue, ApiResponse } from "./types";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 export const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3000";
 
+// ==================== AUTH HELPERS ====================
+const getToken = () => localStorage.getItem("staff_token");
+
+const authHeaders = () => ({
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${getToken()}`,
+});
+
 // ==================== API FUNCTIONS ====================
 export const API = {
   async getQueueByVN(vn: string): Promise<QueueData | null> {
@@ -16,7 +24,6 @@ export const API = {
   },
 
   async getQueueByPhone(phoneNumber: string): Promise<QueueData | null> {
-    // สมมติว่า Backend มี route /api/queue/phone/:phoneNumber
     const response = await fetch(`${API_URL}/api/queue/phone/${phoneNumber}`);
     if (!response.ok) {
       if (response.status === 404) return null;
@@ -36,11 +43,19 @@ export const API = {
     });
     if (!response.ok) return false;
     const data = await response.json();
-    return data.success ? data : false;
+    if (data.success) {
+      // เก็บ token จริงลง localStorage
+      localStorage.setItem("staff_token", data.token);
+      return data;
+    }
+    return false;
   },
 
   async getDepartmentQueues(departmentId: number): Promise<StaffQueue[]> {
-    const response = await fetch(`${API_URL}/api/staff/queues/${departmentId}`);
+    const response = await fetch(
+      `${API_URL}/api/staff/queues/${departmentId}`,
+      { headers: authHeaders() }  
+    );
     if (!response.ok) throw new Error("Failed to fetch queues");
     return response.json();
   },
@@ -48,17 +63,20 @@ export const API = {
   async callQueue(queueId: number, staffName: string): Promise<ApiResponse> {
     const response = await fetch(`${API_URL}/api/staff/queue/${queueId}/call`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(),  
       body: JSON.stringify({ staffName }),
     });
-    if (!response.ok) throw new Error("Failed to call queue");
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || "Failed to call queue");
+    }
     return response.json();
   },
 
   async skipQueue(queueId: number, staffName: string): Promise<ApiResponse> {
     const response = await fetch(`${API_URL}/api/staff/queue/${queueId}/skip`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(),  
       body: JSON.stringify({ staffName }),
     });
     if (!response.ok) throw new Error("Failed to skip queue");
@@ -73,7 +91,7 @@ export const API = {
       `${API_URL}/api/staff/queue/${queueId}/complete`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),  
         body: JSON.stringify({ staffName }),
       }
     );
@@ -89,7 +107,7 @@ export const API = {
       `${API_URL}/api/staff/queue/${queueId}/recall`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),  
         body: JSON.stringify({ staffName }),
       }
     );
@@ -97,11 +115,11 @@ export const API = {
     return response.json();
   },
 
-  async createQueue(vn: string, staffId: number): Promise<ApiResponse> {
+  async createQueue(vn: string, staffId: number, priorityScore: number = 0): Promise<ApiResponse> {
     const response = await fetch(`${API_URL}/api/staff/queue/create`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ vn, staffId }),
+      headers: authHeaders(),
+      body: JSON.stringify({ vn, staffId, priorityScore }),
     });
     if (!response.ok) {
       const error = await response.json();
@@ -118,7 +136,7 @@ export const API = {
       `${API_URL}/api/staff/queue/${queueId}/arrived`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),  
         body: JSON.stringify({ staffName }),
       }
     );

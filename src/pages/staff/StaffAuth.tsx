@@ -16,6 +16,8 @@ export default function StaffAuth({ onLogin, onBack, loading, error }: StaffAuth
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const SHOW_REGISTER = false; // ← ตั้งเป็น true เมื่อต้องการเปิดฟีเจอร์สมัครสมาชิก
+
   const handleSubmit = () => {
     if (authMode === 'login') {
       if (!username || !password) {
@@ -136,8 +138,8 @@ export default function StaffAuth({ onLogin, onBack, loading, error }: StaffAuth
               </div>
             </div>
 
-            {/* Register Mode Fields */}
-            {authMode === 'register' && (
+            {/* Register Mode Fields — hidden until SHOW_REGISTER = true */}
+            {SHOW_REGISTER && authMode === 'register' && (
               <>
                 {/* Confirm Password Field */}
                 <div>
@@ -227,42 +229,44 @@ export default function StaffAuth({ onLogin, onBack, loading, error }: StaffAuth
             </button>
           </div>
 
-          {/* Toggle Auth Mode */}
-          <div className="text-center mt-6">
-            <p className="text-gray-600">
-              {authMode === 'login' ? (
-                <>
-                  ยังไม่มีบัญชี?{' '}
-                  <span 
-                    onClick={() => {
-                      setAuthMode('register');
-                      setUsername('');
-                      setPassword('');
-                      setConfirmPassword('');
-                    }}
-                    className="text-red-500 hover:text-red-600 font-bold cursor-pointer"
-                  >
-                    สมัครที่นี่
-                  </span>
-                </>
-              ) : (
-                <>
-                  มีบัญชีอยู่แล้ว?{' '}
-                  <span 
-                    onClick={() => {
-                      setAuthMode('login');
-                      setUsername('');
-                      setPassword('');
-                      setConfirmPassword('');
-                    }}
-                    className="text-red-500 hover:text-red-600 font-bold cursor-pointer"
-                  >
-                    เข้าสู่ระบบ
-                  </span>
-                </>
-              )}
-            </p>
-          </div>
+          {/* Toggle Auth Mode — hidden until SHOW_REGISTER = true */}
+          {SHOW_REGISTER && (
+            <div className="text-center mt-6">
+              <p className="text-gray-600">
+                {authMode === 'login' ? (
+                  <>
+                    ยังไม่มีบัญชี?{' '}
+                    <span 
+                      onClick={() => {
+                        setAuthMode('register');
+                        setUsername('');
+                        setPassword('');
+                        setConfirmPassword('');
+                      }}
+                      className="text-red-500 hover:text-red-600 font-bold cursor-pointer"
+                    >
+                      สมัครที่นี่
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    มีบัญชีอยู่แล้ว?{' '}
+                    <span 
+                      onClick={() => {
+                        setAuthMode('login');
+                        setUsername('');
+                        setPassword('');
+                        setConfirmPassword('');
+                      }}
+                      className="text-red-500 hover:text-red-600 font-bold cursor-pointer"
+                    >
+                      เข้าสู่ระบบ
+                    </span>
+                  </>
+                )}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ import {
   Building2,
   Clock,
   LogOut,
+  Siren,
 } from "lucide-react";
 import type { StaffData, StaffQueue } from "../../components/shared/types";
 import { API } from "../../components/shared/api";
@@ -28,11 +29,42 @@ type StaffViewType = "dashboard" | "queue" | "account" | "display";
 export default function StaffView({ onBack }: StaffViewProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isStaffLoggedIn, setIsStaffLoggedIn] = useState(false);
-  const [staffData, setStaffData] = useState<StaffData | null>(null);
+  const [isStaffLoggedIn, setIsStaffLoggedIn] = useState(() => {
+  const token = localStorage.getItem("staff_token");
+    if (token && !token.startsWith("eyJ")) {
+      localStorage.removeItem("staff_token");
+      localStorage.removeItem("staff_data");
+      localStorage.removeItem("staff_view");
+      return false;
+    }
+    return !!token;
+  });
+  const [staffData, setStaffData] = useState<StaffData | null>(() => {
+    const saved = localStorage.getItem("staff_data");
+    return saved ? JSON.parse(saved) : null;
+  });
   const [staffQueues, setStaffQueues] = useState<StaffQueue[]>([]);
+  const [currentView, setCurrentView] = useState<StaffViewType>(() => {
+    const saved = localStorage.getItem("staff_view");
+    return (saved as StaffViewType) || "dashboard";
+  });
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [currentView, setCurrentView] = useState<StaffViewType>("dashboard");
+  const handleNavigate = (view: StaffViewType) => {
+    localStorage.setItem("staff_view", view);
+    setCurrentView(view);
+  };
+
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      await loadStaffQueues();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
 
   useEffect(() => {
     let isMounted = true;
@@ -75,6 +107,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
       if (result) {
         setIsStaffLoggedIn(true);
         setStaffData(result);
+        localStorage.setItem("staff_data", JSON.stringify(result));
       } else {
         setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
       }
@@ -96,9 +129,13 @@ export default function StaffView({ onBack }: StaffViewProps) {
   };
 
   const handleLogout = () => {
-    setIsStaffLoggedIn(false);
-    setStaffData(null);
-    onBack();
+    // 1. ล้างข้อมูลใน Storage ให้หมด
+    localStorage.removeItem("staff_token");
+    localStorage.removeItem("staff_data");
+    localStorage.removeItem("staff_view");
+
+    // 2. ใช้คำสั่งนี้เพื่อบังคับให้เบราว์เซอร์โหลดหน้าเว็บใหม่ทั้งหมด
+    window.location.href = "/"; 
   };
 
   if (!isStaffLoggedIn) {
@@ -116,7 +153,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
   const renderContent = () => {
     // 3. เพิ่ม case สำหรับ display
     if (currentView === "display") {
-      return <StaffDisplay onBack={() => setCurrentView("dashboard")} />;
+      return <StaffDisplay onBack={() => handleNavigate("dashboard")} />;
     }
 
     if (currentView === "queue") {
@@ -124,7 +161,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
         <QueueManagement
           staffData={staffData}
           staffQueues={staffQueues}
-          onBack={() => setCurrentView("dashboard")}
+          onBack={() => handleNavigate("dashboard")}
           onRefresh={loadStaffQueues}
         />
       );
@@ -180,6 +217,9 @@ export default function StaffView({ onBack }: StaffViewProps) {
     const currentQueue = staffQueues.find(
       (q) => q.status === "called" || q.status === "in_progress"
     );
+    const priorityQueues = waitingQueues
+    .filter(q => (q.priorityScore ?? 0) >= 1 && (q.priorityScore ?? 0) <= 2)
+    .sort((a, b) => (b.priorityScore ?? 0) - (a.priorityScore ?? 0));
 
     return (
       <div className="container mx-auto px-4 py-8">
@@ -291,7 +331,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
                       </span>
                     </p>
                     <button
-                      onClick={() => setCurrentView("queue")}
+                      onClick={() => handleNavigate("queue")}
                       className="w-full bg-gradient-to-r from-green-400 to-green-500 text-white px-6 py-3 rounded-xl hover:from-green-500 hover:to-green-600 font-bold mt-4 flex items-center justify-center"
                     >
                       <ClipboardList className="w-5 h-5 mr-2" />
@@ -303,7 +343,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
                     <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                     <p className="text-gray-500 mb-4">ไม่มีคิวปัจจุบัน</p>
                     <button
-                      onClick={() => setCurrentView("queue")}
+                      onClick={() => handleNavigate("queue")}
                       className="w-full bg-gradient-to-r from-green-400 to-green-500 text-white px-6 py-3 rounded-xl hover:from-green-500 hover:to-green-600 font-bold flex items-center justify-center"
                     >
                       <ClipboardList className="w-5 h-5 mr-2" />
@@ -316,11 +356,15 @@ export default function StaffView({ onBack }: StaffViewProps) {
 
             <div className="space-y-3">
               <button
-                onClick={loadStaffQueues}
-                className="w-full bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 font-semibold"
-              >
-                รีเฟรชข้อมูล
-              </button>
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 font-semibold disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+            >
+              <span className={`text-lg ${isRefreshing ? "animate-spin inline-block" : ""}`}>
+                ↻
+              </span>
+              {isRefreshing ? "กำลังโหลด..." : "รีเฟรชข้อมูล"}
+            </button>
             </div>
           </div>
 
@@ -423,6 +467,57 @@ export default function StaffView({ onBack }: StaffViewProps) {
               </div>
             </div>
 
+            {priorityQueues.length > 0 && (
+            <div
+              className="bg-white rounded-2xl shadow-xl overflow-hidden"
+              style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
+            >
+              <div className="py-3 text-center" style={{ backgroundColor: "#F97316" }}>
+                <p className="text-white font-bold flex items-center justify-center gap-2">
+                  <Siren className="w-5 h-5" />
+                  คิวเร่งด่วน / ฉุกเฉิน
+                </p>
+              </div>
+              <div className="p-6">
+                <div className="space-y-3">
+                  {priorityQueues.map((queue) => (
+                    <div
+                      key={queue.queueId}
+                      className={`flex items-center justify-between rounded-xl p-4 border-2 ${
+                        (queue.priorityScore ?? 0) >= 2
+                          ? "bg-red-50 border-red-300"
+                          : "bg-orange-50 border-orange-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div
+                          className="rounded-full p-3"
+                          style={{ backgroundColor: (queue.priorityScore ?? 0) >= 2 ? "#FF4C4C" : "#F97316" }}
+                        >
+                          <User className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="text-4xl font-bold" style={{ color: "#044C72" }}>
+                          {queue.queueNumber}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-gray-800 text-lg">{queue.patientName}</p>
+                        <p className="text-sm text-gray-500">VN{queue.vn.split("-").pop()}</p>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                          (queue.priorityScore ?? 0) >= 2
+                            ? "bg-red-100 text-red-600 border border-red-400"
+                            : "bg-orange-100 text-orange-600 border border-orange-400"
+                        }`}>
+                          {(queue.priorityScore ?? 0) >= 2 ? "ฉุกเฉิน" : "เร่งด่วน"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
             {skippedQueues.length > 0 && (
               <div
                 className="bg-white rounded-2xl shadow-xl overflow-hidden"
@@ -488,7 +583,7 @@ export default function StaffView({ onBack }: StaffViewProps) {
       {currentView !== "display" && (
         <StaffHeader
           currentView={currentView}
-          onNavigate={setCurrentView}
+          onNavigate={handleNavigate} 
           staffName={staffData?.staffName}
         />
       )}

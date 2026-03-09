@@ -7,9 +7,12 @@ import {
   X,
   PlusCircle,
   Hourglass,
+  CheckCircle,
+  Siren,
 } from "lucide-react";
 import type { StaffData, StaffQueue } from "../../components/shared/types";
 import { API } from "../../components/shared/api";
+import { printQueueSlip } from "../../components/utils/printQueueSlip";
 
 interface QueueManagementProps {
   staffData: StaffData | null;
@@ -32,30 +35,80 @@ export default function QueueManagement({
         ) || null
     );
 
+    
+  const ARRIVED_KEY = "arrivedQueues";
+  const loadArrivedQueues = (): Map<number, Date> => {
+    try {
+      const saved = sessionStorage.getItem(ARRIVED_KEY);
+      if (!saved) return new Map();
+      return new Map((JSON.parse(saved) as [number, string][]).map(([k, v]) => [k, new Date(v)]));
+    } catch { return new Map(); }
+  };
+
   const waitingQueues = staffQueues.filter(
     (q) => q.status === "waiting" && !q.isSkipped
   );
   const skippedQueues = staffQueues.filter((q) => q.isSkipped);
   const nextQueue = waitingQueues[0];
   const [loading, setLoading] = useState(false);
-  const [showCreateQueue, setShowCreateQueue] = useState(false);
   const [newQueueVN, setNewQueueVN] = useState("");
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const [queueToSkip, setQueueToSkip] = useState<StaffQueue | null>(null);
+  const [arrivedQueues, setArrivedQueues] = useState<Map<number, Date>>(loadArrivedQueues);
+  const [queuePriority, setQueuePriority] = useState<"normal" | "urgent" | "emergency">("normal");
+  const [successQueue, setSuccessQueue] = useState<{ queueNumber: string; patientName: string; vn: string } | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const markArrived = (queueId: number) => {
+    setArrivedQueues(prev => {
+      const next = new Map(prev).set(queueId, new Date());
+      sessionStorage.setItem(ARRIVED_KEY, JSON.stringify([...next]));
+      return next;
+    });
+  };
+  const clearArrived = (queueId: number) => {
+    setArrivedQueues(prev => {
+      const next = new Map(prev);
+      next.delete(queueId);
+      sessionStorage.setItem(ARRIVED_KEY, JSON.stringify([...next]));
+      return next;
+    });
+  };
+
+  const getPriority = (queue: StaffQueue): "normal" | "urgent" | "emergency" => {
+    if ((queue.priorityScore ?? 0) >= 2) return "emergency";
+    if ((queue.priorityScore ?? 0) === 1) return "urgent";
+    return "normal";
+  };
+
+  const priorityQueues = waitingQueues
+    .filter(q => (q.priorityScore ?? 0) >= 1 && (q.priorityScore ?? 0) <= 2)
+    .sort((a, b) => (b.priorityScore ?? 0) - (a.priorityScore ?? 0));
+    
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      await onRefresh();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const called = staffQueues.find(
-      (q) => q.status === "called" || q.status === "in_progress"
-    );
-    if (called) {
-      setCurrentCalledQueue(called);
-    } else if (
-      currentCalledQueue &&
-      !staffQueues.find((q) => q.queueId === currentCalledQueue.queueId)
-    ) {
-      setCurrentCalledQueue(null);
-    }
-  }, [staffQueues]);
+    const stillActive = staffQueues.find(
+    (q) => q.queueId === currentCalledQueue?.queueId &&
+    (q.status === "called" || q.status === "in_progress")
+  );
+  const newCalled = staffQueues.find(
+    (q) => q.status === "called" || q.status === "in_progress"
+  );
+  if (newCalled) {
+    setCurrentCalledQueue(newCalled);
+  } else if (!stillActive) {
+    setCurrentCalledQueue(null);
+  }
+  }, [staffQueues, currentCalledQueue]);
 
   const handleCallQueue = async (queue: StaffQueue) => {
     try {
@@ -63,7 +116,8 @@ export default function QueueManagement({
       setCurrentCalledQueue(queue);
       await onRefresh();
     } catch (err) {
-      alert("เกิดข้อผิดพลาดในการเรียกคิว");
+      const error = err as Error;
+      alert(error.message || "เกิดข้อผิดพลาดในการเรียกคิว");
     }
   };
 
@@ -94,6 +148,9 @@ export default function QueueManagement({
         setCurrentCalledQueue(null);
       }
 
+      // ล้างสถานะมาแล้วออก
+      clearArrived(queueToSkip.queueId);
+
       await onRefresh();
     } catch (err) {
       alert("เกิดข้อผิดพลาดในการข้ามคิว");
@@ -106,6 +163,7 @@ export default function QueueManagement({
   const handleCompleteQueue = async (queueId: number) => {
     try {
       await API.completeQueue(queueId, staffData?.staffName || "staff");
+      clearArrived(queueId);
       setCurrentCalledQueue(null);
       await onRefresh();
     } catch (err) {
@@ -153,10 +211,15 @@ export default function QueueManagement({
 
     setLoading(true);
     try {
-      const result = await API.createQueue(inputVN, staffData.staffId);
-      alert(`สร้างคิวสำเร็จ: ${result.queueNumber}`);
+      const priorityScore = queuePriority === "emergency" ? 2 : queuePriority === "urgent" ? 1 : 0;
+      const result = await API.createQueue(inputVN, staffData.staffId, priorityScore);
+
+      setSuccessQueue({
+        queueNumber: result.queueNumber ?? "",
+        patientName: (result as any).patientName ?? "",
+        vn: inputVN,
+      });
       setNewQueueVN("");
-      setShowCreateQueue(false);
       await onRefresh();
     } catch (err) {
       const error = err as Error;
@@ -195,26 +258,27 @@ export default function QueueManagement({
           </div>
 
           <button
-            onClick={onRefresh}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-semibold shadow"
+            onClick={handleRefresh}             
+            disabled={isRefreshing}             
+            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-semibold shadow disabled:opacity-60 disabled:cursor-not-allowed transition-all"
           >
-            รีเฟรช
+            <span className={`text-lg ${isRefreshing ? "animate-spin inline-block" : ""}`}>
+              ↻
+            </span>
+            {isRefreshing ? "กำลังโหลด..." : "รีเฟรช"}
           </button>
         </div>
 
         {/* Main Grid - 2 Columns */}
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Left Column - Create Queue & Waiting List */}
+        <div className="grid lg:grid-cols-2 gap-6 items-start">
+          {/* Left Column */}
           <div className="space-y-6">
             {/* Create Queue */}
-            <div
-              className="bg-white rounded-2xl shadow-xl overflow-hidden"
-              style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
-            >
-              <div className="bg-teal-500 py-3 text-center">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden" style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}>
+              <div className="py-3 text-center" style={{ backgroundColor: "#39AAAD" }}>
                 <p className="text-white font-bold">สร้างคิวใหม่</p>
               </div>
-              <div className="p-6">
+              <div className="p-8">
                 <form onSubmit={handleCreateQueue} className="space-y-3">
                   <div>
                     <label
@@ -233,6 +297,24 @@ export default function QueueManagement({
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-teal-500"
                       disabled={loading}
                     />
+                    <div className="flex gap-2 mt-2">
+                    {(["normal", "urgent", "emergency"] as const).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setQueuePriority(p)}
+                        className={`flex-1 py-2 rounded-lg font-bold text-sm border-2 transition-colors ${
+                          queuePriority === p
+                            ? p === "emergency" ? "bg-red-500 text-white border-red-500"
+                            : p === "urgent" ? "bg-orange-400 text-white border-orange-400"
+                            : "bg-gray-200 text-gray-700 border-gray-200"
+                            : "bg-white border-gray-300 text-gray-500"
+                        }`}
+                      >
+                        {p === "normal" ? "ทั่วไป" : p === "urgent" ? "เร่งด่วน" : "ฉุกเฉิน"}
+                      </button>
+                    ))}
+                  </div>
                   </div>
                   <button
                     type="submit"
@@ -258,6 +340,9 @@ export default function QueueManagement({
                 <p className="text-white font-bold flex items-center justify-center gap-2">
                   <Hourglass className="w-5 h-5" />
                   คิวที่รออยู่
+                  <span className="bg-white text-orange-500 text-xs font-bold px-2 py-0.5 rounded-full">
+                        {waitingQueues.length}
+                  </span>
                 </p>
               </div>
               <div className="p-6">
@@ -290,6 +375,16 @@ export default function QueueManagement({
                             <p className="text-sm text-gray-500">
                               Tel: {queue.phoneNumber}
                             </p>
+                            {getPriority(queue) === "emergency" && (
+                              <span className="bg-red-100 text-red-600 border border-red-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                                ฉุกเฉิน
+                              </span>
+                            )}
+                            {getPriority(queue) === "urgent" && (
+                              <span className="bg-orange-100 text-orange-600 border border-orange-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                                เร่งด่วน
+                              </span>
+                            )}
                           </div>
 
                           {!currentCalledQueue && (
@@ -318,7 +413,7 @@ export default function QueueManagement({
               className="bg-white rounded-2xl shadow-xl overflow-hidden"
               style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
             >
-              <div className="bg-teal-500 py-3 text-center">
+              <div className="py-3 text-center" style={{ backgroundColor: "#39AAAD" }}>
                 <p className="text-white font-bold">คิวปัจจุบัน</p>
               </div>
               <div className="p-6">
@@ -395,10 +490,19 @@ export default function QueueManagement({
                         {nextQueue && (
                           <button
                             onClick={async () => {
-                              await handleCompleteQueue(
-                                currentCalledQueue.queueId
-                              );
-                              setTimeout(() => handleCallQueue(nextQueue), 500);
+                              const nextQueueId = nextQueue.queueId; // snapshot id ไว้ก่อน
+                              const staffName = staffData?.staffName || "staff";
+                              try {
+                                await API.completeQueue(currentCalledQueue.queueId, staffName);
+                                clearArrived(currentCalledQueue.queueId);
+                                await API.callQueue(nextQueueId, staffName);
+                                setCurrentCalledQueue(nextQueue);
+                                await onRefresh();
+                              } catch (err) {
+                                const error = err as Error;
+                                alert(error.message || "เกิดข้อผิดพลาด");
+                                await onRefresh();
+                              }
                             }}
                             className="text-white px-4 py-3 rounded-lg hover:bg-orange-200 flex items-center justify-center font-semibold"
                             style={{ backgroundColor: "#FFAE3C" }}
@@ -411,7 +515,7 @@ export default function QueueManagement({
                     )}
                   </div>
                 ) : (
-                  <div className="text-center py-12">
+                  <div className="text-center py-3">
                     <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-500 text-lg mb-6">
                       ไม่คิวในขณะนี้ กรุณาเพิ่มคิวปัจจุบัน
@@ -431,6 +535,65 @@ export default function QueueManagement({
               </div>
             </div>
 
+              {/* Priority Queues */}
+              {priorityQueues.length > 0 && (
+                <div
+                  className="bg-white rounded-2xl shadow-xl overflow-hidden"
+                  style={{ borderWidth: "2px", borderColor: "#BEBEBE" }}
+                >
+                  <div className="py-3 text-center" style={{ backgroundColor: "#F97316" }}>
+                    <p className="text-white font-bold flex items-center justify-center gap-2">
+                      <Siren className="w-5 h-5" />
+                      คิวเร่งด่วน / ฉุกเฉิน
+                      <span className="bg-white text-orange-500 text-xs font-bold px-2 py-0.5 rounded-full">
+                        {priorityQueues.length}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="p-6">
+                    <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                      {priorityQueues.map((queue) => (
+                        <div
+                          key={queue.queueId}
+                          className={`bg-white rounded-3xl px-6 py-4 border-2 transition-colors shadow-sm ${
+                            getPriority(queue) === "emergency"
+                              ? "border-red-400 hover:border-red-500"
+                              : "border-orange-300 hover:border-orange-400"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="text-4xl font-bold" style={{ color: "#044C72" }}>
+                              {queue.queueNumber}
+                            </div>
+                            <div className="flex-1 mx-6">
+                              <p className="font-bold text-gray-800 text-lg">{queue.patientName}</p>
+                              <p className="text-sm text-gray-500">VN{queue.vn.split("-").pop()}</p>
+                              <p className="text-sm text-gray-500">Tel: {queue.phoneNumber}</p>
+                              {getPriority(queue) === "emergency" && (
+                                <span className="bg-red-100 text-red-600 border border-red-400 px-2 py-0.5 rounded-full text-xs font-bold">ฉุกเฉิน</span>
+                              )}
+                              {getPriority(queue) === "urgent" && (
+                                <span className="bg-orange-100 text-orange-600 border border-orange-400 px-2 py-0.5 rounded-full text-xs font-bold">เร่งด่วน</span>
+                              )}
+                            </div>
+                            {!currentCalledQueue && (
+                              <button
+                                onClick={() => handleCallQueue(queue)}
+                                className="text-white px-8 py-3 rounded-full font-bold flex items-center shadow-md text-lg"
+                                style={{ backgroundColor: "#87E74B" }}
+                              >
+                                <Bell className="w-5 h-5 mr-2" />
+                                เรียก
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}  
+
             {/* Skipped Queues */}
             <div
               className="bg-white rounded-2xl shadow-xl overflow-hidden"
@@ -443,6 +606,9 @@ export default function QueueManagement({
                 <p className="text-white font-bold flex items-center justify-center gap-2">
                   <AlertCircle className="w-5 h-5" />
                   คิวที่ถูกข้าม
+                  <span className="bg-white text-red-500 text-xs font-bold px-2 py-0.5 rounded-full">
+                        {skippedQueues.length}
+                  </span>
                 </p>
               </div>
               <div className="p-6">
@@ -452,7 +618,16 @@ export default function QueueManagement({
                       ไม่มีคิวที่ถูกข้าม
                     </div>
                   ) : (
-                    skippedQueues.map((queue) => (
+                   [...skippedQueues]
+                    .sort((a, b) => {
+                      const aTime = arrivedQueues.get(a.queueId);
+                      const bTime = arrivedQueues.get(b.queueId);
+                      if (aTime && bTime) return aTime.getTime() - bTime.getTime(); // มาก่อนอยู่บน
+                      if (aTime) return -1;
+                      if (bTime) return 1;
+                      return 0;
+                    })
+                    .map((queue) => (
                       <div
                         key={queue.queueId}
                         className="bg-white rounded-3xl px-6 py-4 border-2 border-gray-200 hover:border-red-300 transition-colors shadow-sm"
@@ -475,31 +650,72 @@ export default function QueueManagement({
                             <p className="text-sm text-gray-500">
                               Tel: {queue.phoneNumber}
                             </p>
+
+                            {getPriority(queue) === "emergency" && (
+                              <span className="bg-red-100 text-red-600 border border-red-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                                ฉุกเฉิน
+                              </span>
+                            )}
+                            {getPriority(queue) === "urgent" && (
+                              <span className="bg-orange-100 text-orange-600 border border-orange-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                                เร่งด่วน
+                              </span>
+                            )}
                             {queue.skippedTime && (
                               <p className="text-xs text-gray-400 mt-1">
                                 ข้ามเมื่อ:{" "}
-                                {new Date(queue.skippedTime).toLocaleTimeString("th-TH", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  timeZone: "Asia/Bangkok",
-                                })}
+                                {queue.skippedTime}
                               </p>
                             )}
                           </div>
 
-                          <button
+                          {/* <button
                             onClick={() => handleRecallSkipped(queue.queueId)}
                             className="text-white px-8 py-3 rounded-full hover:from-green-500 hover:to-green-600 font-bold flex items-center shadow-md text-lg"
                             style={{ backgroundColor: "#87E74B" }}
                           >
                             <Bell className="w-5 h-5 mr-2" />
                             คิวถัดไป
-                          </button>
+                          </button> */}
+                           <div className="flex flex-row items-center gap-2">
+                            {arrivedQueues.has(queue.queueId) ? (
+                              <>
+                                <span className="flex items-center gap-1 bg-green-100 text-green-700 border border-green-400 px-3 py-1.5 rounded-full font-bold text-sm">
+                                  <CheckSquare className="w-4 h-4" />
+                                  มาแล้ว ✓
+                                </span>
+                                {!currentCalledQueue && (
+                                  <button
+                                    onClick={() => handleCallQueue(queue)}
+                                    className="text-white px-8 py-3 rounded-full font-bold flex items-center shadow-md text-lg"
+                                    style={{ backgroundColor: "#87E74B" }}
+                                  >
+                                    <Bell className="w-5 h-5 mr-2" />
+                                    เรียก
+                                  </button>
+                                )}
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => markArrived(queue.queueId)}
+                      className="flex items-center gap-1 bg-white text-green-600 border-2 border-green-400 px-3 py-1.5 rounded-full font-bold text-sm hover:bg-green-50 transition-colors"
+                    >
+                      <CheckSquare className="w-4 h-4" />
+                      มาแล้ว
+                    </button>
+                  )}
+                </div>
                         </div>
                       </div>
                     ))
-                  )}
-                  {/* Skip Confirmation Modal */}
+                  )}                  
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Skip Confirmation Modal */}
                   {showSkipConfirm && queueToSkip && (
                     <div
                       className="fixed inset-0 flex items-center justify-center z-50"
@@ -562,12 +778,78 @@ export default function QueueManagement({
                       </div>
                     </div>
                   )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+
+                  {/* Success Queue Modal */}
+                  {successQueue && (
+                    <div
+                      className="fixed inset-0 flex items-center justify-center z-50"
+                      style={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
+                      onClick={() => setSuccessQueue(null)}
+                    >
+                      <div
+                        className="bg-white rounded-3xl p-8 mx-4 shadow-2xl text-center relative"
+                        style={{ width: "380px", maxWidth: "90vw" }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {/* ปุ่ม X */}
+                        <button
+                          onClick={() => setSuccessQueue(null)}
+                          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+
+                        <h3 className="font-bold mb-6" style={{ color: "#044C72", fontFamily: "Inter", fontSize: "24px", fontWeight: 700, lineHeight: "100%" }}>
+                          เพิ่มคิวสำเร็จ
+                        </h3>
+
+                        {/* วงกลมติ๊กถูก */}
+                        <div className="flex items-center justify-center mb-4">
+                          <div
+                            className="w-24 h-24 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: "#4CAF50" }}
+                          >
+                            <CheckCircle className="w-14 h-14 text-white" />
+                          </div>
+                        </div>
+
+                        {/* เลขคิว */}
+                        <p className="text-5xl font-bold mb-2" style={{ color: "#044C72" }}>
+                          {successQueue.queueNumber}
+                        </p>
+
+                        {/* ชื่อ + VN */}
+                        {successQueue.patientName && (
+                          <p style={{ color: "#044C72", fontFamily: "Inter", fontSize: "22px", fontWeight: 400, lineHeight: "100%", textTransform: "capitalize" }}>
+                            {successQueue.patientName}
+                          </p>
+                        )}
+                        <p className="mb-8" style={{ color: "#044C72", fontFamily: "Inter", fontSize: "14px", fontWeight: 400, lineHeight: "100%", textTransform: "capitalize", marginTop: successQueue.patientName ? "4px" : "16px" }}>
+                          VN{successQueue.vn.split("-").pop()}
+                        </p>
+
+                        {/* ปุ่ม */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            onClick={() => printQueueSlip({
+                              ...successQueue,
+                              departmentName: staffData?.departmentName,
+                            })}
+                            className="px-6 py-3 text-white rounded-xl font-bold text-base shadow-lg hover:opacity-90"
+                            style={{ backgroundColor: "#939393" }}
+                          >
+                            ปริ้นบัตรคิว
+                          </button>
+                          <button
+                            onClick={() => setSuccessQueue(null)}
+                            className="px-6 py-3 bg-transparent border-2 border-gray-400 text-gray-500 rounded-xl hover:bg-gray-50 font-bold text-base"
+                          >
+                            ยกเลิก
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
     </div>
   );
 }

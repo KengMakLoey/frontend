@@ -16,32 +16,11 @@ import {
 import { API } from "../../components/shared/api.ts";
 import { toast } from "sonner";
 import type { QueueData } from "../../components/shared/types.ts";
+import { useLanguage } from "../../components/contexts/LanguageContext";
 
-// --- Schema ---
-const formSchema = z
-  .object({
-    vn: z.string().optional(),
-    phone: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      const hasVN = data.vn && data.vn.trim().length > 0;
-      const hasPhone = data.phone && data.phone.trim().length > 0;
-      return hasVN || hasPhone;
-    },
-    {
-      message: "กรุณากรอก Visit Number หรือ เบอร์โทรศัพท์",
-      path: ["vn"],
-    }
-  );
-
-type FormValues = z.infer<typeof formSchema>;
-
-// --- Helper Functions ---
 const formatVN = (inputVN: string) => {
   const vn = inputVN.trim();
   if (!vn) return "";
-
   const today = new Date();
   const yy = String(today.getFullYear()).slice(-2);
   const mm = String(today.getMonth() + 1).padStart(2, "0");
@@ -61,8 +40,28 @@ interface PatientVNProps {
   onSuccess: (data: QueueData) => void;
 }
 
-const PatientVN = ({ onSuccess }: PatientVNProps) => {
+const PatientVN = ({ onSuccess, onBack }: PatientVNProps) => {
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
+
+  const formSchema = z
+    .object({
+      vn: z.string().optional(),
+      phone: z.string().optional(),
+    })
+    .refine(
+      (data) => {
+        const hasVN = data.vn && data.vn.trim().length > 0;
+        const hasPhone = data.phone && data.phone.trim().length > 0;
+        return hasVN || hasPhone;
+      },
+      {
+        message: t.patient_vn.error_fill,
+        path: ["vn"],
+      },
+    );
+
+  type FormValues = z.infer<typeof formSchema>;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -76,11 +75,9 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
     setIsLoading(true);
     try {
       let queueData: QueueData | null = null;
-      let usedMethod = "";
 
       if (values.vn && values.vn.trim()) {
         const formattedVN = formatVN(values.vn);
-        usedMethod = "VN";
         try {
           queueData = await API.getQueueByVN(formattedVN);
         } catch (e) {
@@ -89,7 +86,6 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
       }
 
       if (!queueData && values.phone && values.phone.trim()) {
-        usedMethod = "Phone";
         try {
           queueData = await API.getQueueByPhone(values.phone.trim());
         } catch (e) {
@@ -100,11 +96,11 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
       if (queueData) {
         onSuccess(queueData);
       } else {
-        toast.error(`ไม่พบข้อมูลคิว`);
-        form.setError("vn", { message: "ไม่พบข้อมูล กรุณาตรวจสอบความถูกต้อง" });
+        toast.error(t.patient_vn.error_not_found);
+        form.setError("vn", { message: t.patient_vn.error_not_found });
       }
     } catch (error) {
-      toast.error("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+      toast.error(t.common.loading);
     } finally {
       setIsLoading(false);
     }
@@ -112,22 +108,43 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
 
   return (
     <div className="h-[100dvh] w-full flex flex-col bg-white font-sans overflow-hidden">
-      {/* Header */}
       <div className="shrink-0">
         <Header />
       </div>
-
-      {/* Main Content */}
+    {/* ฺBack Button */}
+    <div style={{
+      position: "sticky",
+      top: 0,
+      zIndex: 40,
+      backgroundColor: "white",
+      padding: "8px 16px",
+    }}>
+      <button
+        onClick={onBack}
+        style={{
+          backgroundColor: "transparent",
+          color: "#044C72",
+          border: "none",
+          fontWeight: "bold",
+          fontSize: "16px",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "4px",
+        }}
+      >
+        ← {t.common.back}
+      </button>
+    </div>
+    
       <main className="flex-1 flex flex-col items-center justify-center px-4 w-full pb-4">
-        {/* Wrapper */}
         <div className="w-full max-w-[320px] sm:max-w-md space-y-4 sm:space-y-6">
-          {/* Title Section - สีน้ำเงินเข้ม */}
           <div className="text-center space-y-1">
             <h1 className="text-[#044C72] text-2xl sm:text-4xl font-bold tracking-tight">
-              ตรวจสอบคิว
+              {t.patient_vn.title}
             </h1>
             <p className="text-gray-400 text-xs sm:text-sm font-light">
-              ตรวจสอบคิวของท่านด้วยเลข VN
+              {t.patient_vn.subtitle}
             </p>
           </div>
 
@@ -150,14 +167,11 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
                   render={({ field }) => (
                     <FormItem className="space-y-1">
                       <label className="text-[#044C72] text-sm font-medium ml-1 block">
-                        Visit Number{" "}
-                        <span className="text-[#044C72]/70 font-normal text-xs hidden sm:inline">
-                          (หมายเลขการมาใช้บริการ)
-                        </span>
+                        {t.patient_vn.label_vn}
                       </label>
                       <FormControl>
                         <Input
-                          placeholder="ตัวอย่าง: VN..."
+                          placeholder={t.patient_vn.placeholder_vn}
                           className="h-10 sm:h-12 border-[#BEBEBE] rounded-xl text-sm sm:text-base text-gray-700 placeholder:text-gray-300 focus:border-[#6B9E36] focus:ring-[#6B9E36]/20 transition-all"
                           {...field}
                         />
@@ -174,11 +188,11 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
                   render={({ field }) => (
                     <FormItem className="space-y-1">
                       <label className="text-[#044C72] text-sm font-medium ml-1 block">
-                        เบอร์โทรศัพท์
+                        {t.patient_vn.label_phone}
                       </label>
                       <FormControl>
                         <Input
-                          placeholder="ตัวอย่าง: 08..."
+                          placeholder={t.patient_vn.placeholder_phone}
                           className="h-10 sm:h-12 border-[#BEBEBE] rounded-xl text-sm sm:text-base text-gray-700 placeholder:text-gray-300 focus:border-[#6B9E36] focus:ring-[#6B9E36]/20 transition-all"
                           type="tel"
                           maxLength={10}
@@ -201,7 +215,7 @@ const PatientVN = ({ onSuccess }: PatientVNProps) => {
                       boxShadow: "0 4px 10px rgba(114, 210, 56, 0.3)",
                     }}
                   >
-                    {isLoading ? "กำลังค้นหา..." : "ตรวจสอบคิว"}
+                    {isLoading ? t.common.loading : t.patient_vn.check_btn}
                   </Button>
                 </div>
               </form>
