@@ -111,6 +111,7 @@ export default function QueueManagement({
   }, [staffQueues]);
 
   const handleCallQueue = async (queue: StaffQueue) => {
+    setLoading(true);
     try {
       await API.callQueue(queue.queueId, staffData?.staffName || "staff");
       setCurrentCalledQueue(queue);
@@ -118,15 +119,20 @@ export default function QueueManagement({
     } catch (err) {
       const error = err as Error;
       alert(error.message || "เกิดข้อผิดพลาดในการเรียกคิว");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handlePatientArrived = async (queueId: number) => {
+    setLoading(true);
     try {
       await API.updatePatientArrived(queueId, staffData?.staffName || "staff");
       await onRefresh();
     } catch (err) {
       alert("เกิดข้อผิดพลาดในการอัพเดทสถานะ");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -140,27 +146,25 @@ export default function QueueManagement({
 
   const confirmSkipQueue = async () => {
     if (!queueToSkip) return;
-
+    setLoading(true);
     try {
       await API.skipQueue(queueToSkip.queueId, staffData?.staffName || "staff");
-
+      clearArrived(queueToSkip.queueId);
       if (currentCalledQueue?.queueId === queueToSkip.queueId) {
         setCurrentCalledQueue(null);
       }
-
-      // ล้างสถานะมาแล้วออก
-      clearArrived(queueToSkip.queueId);
-
       await onRefresh();
     } catch (err) {
       alert("เกิดข้อผิดพลาดในการข้ามคิว");
     } finally {
+      setLoading(false);
       setShowSkipConfirm(false);
       setQueueToSkip(null);
     }
   };
 
   const handleCompleteQueue = async (queueId: number) => {
+    setLoading(true);
     try {
       await API.completeQueue(queueId, staffData?.staffName || "staff");
       clearArrived(queueId);
@@ -168,6 +172,8 @@ export default function QueueManagement({
       await onRefresh();
     } catch (err) {
       alert("เกิดข้อผิดพลาดในการทำรายการให้เสร็จสิ้น");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -312,7 +318,7 @@ export default function QueueManagement({
                     className="w-full bg-gradient-to-r from-green-400 to-green-500 text-white px-6 py-3 rounded-lg hover:from-green-500 hover:to-green-600 font-bold disabled:opacity-50 flex items-center justify-center"
                   >
                     <PlusCircle className="w-5 h-5 mr-2" />
-                    {loading ? "กำลังสร้าง..." : "สร้าง"}
+                    สร้าง
                   </button>
                 </form>
               </div>
