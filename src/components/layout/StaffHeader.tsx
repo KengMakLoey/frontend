@@ -1,42 +1,12 @@
-import { useState, useRef, useEffect } from "react";
-import {
-  ChevronDown,
-  Check,
-  Home,
-  PlusSquare,
-  User,
-  Monitor,
-} from "lucide-react"; // 1. เพิ่ม Monitor
-import {
-  useLanguage,
-  LANGUAGES,
-  type LanguageCode,
-} from "../contexts/LanguageContext";
+import { Home, PlusSquare, User, Monitor } from "lucide-react";
 
 interface StaffHeaderProps {
-  currentView: "dashboard" | "queue" | "account" | "display"; // 2. เพิ่ม Type display
-  onNavigate: (view: "dashboard" | "queue" | "account" | "display") => void; // 3. อัปเดต Type onNavigate
+  currentView: "dashboard" | "queue" | "account" | "display";
+  onNavigate: (view: "dashboard" | "queue" | "account" | "display") => void;
   staffName?: string;
 }
 
 const StaffHeader = ({ currentView, onNavigate }: StaffHeaderProps) => {
-  const { currentLanguage, setLanguage } = useLanguage();
-  const [isLangOpen, setIsLangOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsLangOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const getMenuClass = (viewName: string) => {
     const isActive = currentView === viewName;
     return `flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer font-bold text-sm sm:text-base
@@ -86,7 +56,6 @@ const StaffHeader = ({ currentView, onNavigate }: StaffHeaderProps) => {
             <span className="hidden sm:inline">จัดการคิว</span>
           </button>
 
-          {/* 4. เพิ่มปุ่ม Display */}
           <button
             className={getMenuClass("display")}
             onClick={() => onNavigate("display")}
@@ -102,65 +71,6 @@ const StaffHeader = ({ currentView, onNavigate }: StaffHeaderProps) => {
             <User className="w-5 h-5" strokeWidth={2.5} />
             <span className="hidden sm:inline uppercase">Account</span>
           </button>
-
-          <div className="h-6 w-[1px] bg-gray-200 mx-1"></div>
-
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setIsLangOpen(!isLangOpen)}
-              className={`
-                flex items-center gap-2 pl-1.5 pr-2 py-1.5 rounded-full border-2 transition-all duration-200 outline-none
-                ${
-                  isLangOpen
-                    ? "border-[#39AAAD] bg-teal-50"
-                    : "border-[#39AAAD] bg-white hover:bg-gray-50"
-                }
-              `}
-              style={{ minWidth: "70px", justifyContent: "space-between" }}
-            >
-              <div className="flex-shrink-0 scale-90">
-                {currentLanguage.flag}
-              </div>
-              <ChevronDown
-                className={`w-4 h-4 text-[#39AAAD] transition-transform duration-200 ${
-                  isLangOpen ? "rotate-180" : ""
-                }`}
-                strokeWidth={3}
-              />
-            </button>
-
-            {isLangOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-50">
-                {LANGUAGES.map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => {
-                      setLanguage(lang.code as LanguageCode);
-                      setIsLangOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-teal-50 transition-colors
-                      ${
-                        currentLanguage.code === lang.code
-                          ? "text-[#005691] font-semibold bg-blue-50/30"
-                          : "text-gray-600"
-                      }
-                    `}
-                  >
-                    <span className="flex items-center gap-3">
-                      <span className="scale-100">{lang.flag}</span>
-                      <span>{lang.label}</span>
-                    </span>
-                    {currentLanguage.code === lang.code && (
-                      <Check
-                        className="w-4 h-4 text-[#39AAAD]"
-                        strokeWidth={2.5}
-                      />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </header>
